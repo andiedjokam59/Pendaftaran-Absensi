@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendaftaran Mandiri & QR Code</title>
+    <!-- Library Pembuat QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #047857;
+            --primary-hover: #065f46;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            margin: 0; padding: 16px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%; max-width: 420px;
+            background: var(--bg-card);
+            padding: 28px 24px; border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+        }
+
+        h2 { text-align: center; margin: 0 0 6px 0; color: var(--primary); font-size: 22px; font-weight: 700; }
+        p.subtitle { text-align: center; color: var(--text-muted); font-size: 13px; margin: 0 0 24px 0; font-weight: 500; }
+
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dark); }
+        
+        input, select {
+            width: 100%; padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px; box-sizing: border-box; font-size: 14px;
+            outline: none; transition: all 0.2s;
+            font-family: inherit; color: var(--text-dark);
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
+        
+        /* Gaya khusus untuk input ID otomatis yang dikunci */
+        input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
+
+        .btn {
+            width: 100%; padding: 14px; background: var(--primary);
+            color: white; border: none; border-radius: 10px;
+            font-weight: 600; font-size: 15px; cursor: pointer;
+            transition: background 0.2s; margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
+        }
+        .btn:hover { background: var(--primary-hover); }
+
+        /* Kotak Hasil QR Code */
+        .qr-result-box {
+            margin-top: 24px; padding-top: 20px;
+            border-top: 2px dashed var(--border-color);
+            display: none; text-align: center;
+            animation: slideUp 0.4s ease-out;
+        }
+        #qrcode {
+            display: inline-block; padding: 12px;
+            background: white; border: 1px solid var(--border-color);
+            border-radius: 12px; margin-bottom: 12px;
+        }
+        .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
+        .btn-download:hover { background: #1d4ed8; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Pendaftaran Mandiri</h2>
+    <p class="subtitle">Insan Qur'any Tawangmangu</p>
+    
+    <!-- Form Input Data -->
+    <div class="form-group">
+        <label for="id_generus">ID Anggota Anda (Otomatis)</label>
+        <input type="text" id="id_generus" readonly>
+    </div>
+    
+    <div class="form-group">
+        <label for="nama">Nama Lengkap</label>
+        <input type="text" id="nama" placeholder="Ketik nama lengkap sesuai KTP/KK...">
+    </div>
+
+    <!-- Label diubah dari Jabatan menjadi Dapukan -->
+    <div class="form-group">
+        <label for="status">Dapukan</label>
+        <select id="status">
+            <option value="Generus">Generus</option>
+            <option value="Pengurus">Pengurus</option>
+        </select>
+    </div>
+
+    <!-- Contoh teks diubah menjadi Ketua, Sekretaris, dll -->
+    <div class="form-group">
+        <label for="sebagai_apa">Sebagai Apa? <span style="color: var(--text-muted); font-weight: normal; text-transform: lowercase;">(opsional)</span></label>
+        <input type="text" id="sebagai_apa" placeholder="Contoh: Ketua, Sekretaris, dll...">
+    </div>
+
+    <div class="form-group">
+        <label for="kelompok">Kelompok</label>
+        <input type="text" id="kelompok" placeholder="Contoh: Kelompok Blimbing 1">
+    </div>
+
+    <div class="form-group">
+        <label for="desa">Desa</label>
+        <input type="text" id="desa" placeholder="Contoh: Karanglo Selatan">
+    </div>
+
+    <button class="btn" id="btn-daftar" onclick="prosesPendaftaranMandiri()">Kirim & Buat QR Code</button>
+
+    <!-- Hasil Pembuatan QR Code -->
+    <div id="result-section" class="qr-result-box">
+        <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan download QR Code ini untuk ditunjukkan saat absensi.</p>
+        <div id="qrcode"></div>
+        <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
+        <button class="btn btn-download" onclick="unduhQRCode()">⬇ Simpan QR Code ke HP</button>
+    </div>
+</div>
+
+<script>
+    // MASUKKAN KREDENSIAL SUPABASE ANDA DI SINI
+    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Fungsi Otomatis Membuat ID Acak saat Halaman Dibuka
+    function buatIdOtomatis() {
+        const teksAwalan = "IQ";
+        const angkaAcak = Math.floor(10000 + Math.random() * 90000); 
+        document.getElementById('id_generus').value = teksAwalan + angkaAcak;
+    }
+
+    window.onload = buatIdOtomatis;
+
+    async function prosesPendaftaranMandiri() {
+        let idGenerus = document.getElementById('id_generus').value.trim();
+        let nama = document.getElementById('nama').value.trim();
+        let status = document.getElementById('status').value;
+        let sebagaiApa = document.getElementById('sebagai_apa').value.trim(); 
+        let kelompok = document.getElementById('kelompok').value.trim();
+        let desa = document.getElementById('desa').value.trim();
+        let btnDaftar = document.getElementById('btn-daftar');
+
+        if(!nama) return alert("Harap masukkan Nama Lengkap Anda!");
+        if(!kelompok) return alert("Harap masukkan Nama Kelompok Anda!");
+        if(!desa) return alert("Harap masukkan Wilayah Desa Anda!");
+
+        btnDaftar.innerText = "Menyimpan data...";
+        btnDaftar.disabled = true;
+
+        const dataJemaah = {
+            id_generus: idGenerus,
+            nama: nama,
+            kelompok: kelompok,
+            desa: desa
+            // Jika di Supabase Anda sudah menambah kolom dapukan/detail, silakan aktifkan di bawah ini:
+            //, status: status,
+            // sebagai_apa: sebagaiApa
+        };
+
+        // Simpan ke Supabase
+        let { error } = await _supabase.from('data_generus').insert([dataJemaah]);
+
+        if (error) {
+            if(error.code === '23505') {
+                buatIdOtomatis(); 
+                alert("Sistem mendeteksi ID sibuk. ID baru telah dibuat, silakan klik tombol sekali lagi!");
+            } else {
+                alert("Gagal mendaftar, silakan coba lagi: " + error.message);
+            }
+            btnDaftar.innerText = "Kirim & Buat QR Code";
+            btnDaftar.disabled = false;
+            return;
+        }
+
+        tampilkanQRCode(idGenerus, nama);
+    }
+
+    function tampilkanQRCode(idText, namaOrang) {
+        let qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+
+        new QRCode(qrContainer, {
+            text: idText,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
+        document.getElementById('result-section').style.display = "block";
+        document.getElementById('btn-daftar').style.display = "none";
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function unduhQRCode() {
+        let idText = document.getElementById('id_generus').value.trim();
+        let namaOrang = document.getElementById('nama').value.trim();
+        let namaFile = `QR_${idText}_${namaOrang.replace(/\s+/g, '_')}.png`;
+
+        let qrImg = document.querySelector("#qrcode img");
+        if (qrImg && qrImg.src) {
+            let link = document.createElement("a");
+            link.href = qrImg.src;
+            link.download = namaFile;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        } else {
+            let qrCanvas = document.querySelector("#qrcode canvas");
+            if(qrCanvas) {
+                let link = document.createElement("a");
+                link.href = qrCanvas.toDataURL("image/png");
+                link.download = namaFile;
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            } else {
+                alert("Gambar QR Code belum siap. Silakan screenshot layar HP Anda.");
+            }
+        }
+    }
+</script>
+</body>
+</html>
