@@ -183,12 +183,11 @@
         const dataJemaah = {
             id_generus: idGenerus,
             nama: nama,
+            jenis_kelamin: jenisKelamin, // Sekarang sudah aktif kirim Jenis Kelamin
+            status: status,              // Sekarang sudah aktif kirim Dapukan
+            sebagai_apa: sebagaiApa,     // Sekarang sudah aktif kirim Detail Opsional
             kelompok: kelompok,
             desa: desa
-            // Jika di Supabase sudah ada kolom jenis_kelamin, dapukan, atau detail, tinggal aktifkan baris di bawah ini:
-            //, jenis_kelamin: jenisKelamin,
-            // status: status,
-            // sebagai_apa: sebagaiApa
         };
 
         // Simpan ke Supabase
