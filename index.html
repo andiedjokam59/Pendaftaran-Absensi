@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pendaftaran Mandiri & QR Code</title>
-    <!-- Library Pembuat QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
     
@@ -93,7 +91,6 @@
     <h2>Pendaftaran Mandiri</h2>
     <p class="subtitle">Insan Qur'any Tawangmangu</p>
     
-    <!-- Form Input Data -->
     <div class="form-group">
         <label for="id_generus">ID Anggota Anda (Otomatis)</label>
         <input type="text" id="id_generus" readonly>
@@ -104,7 +101,6 @@
         <input type="text" id="nama" placeholder="Ketik nama lengkap sesuai KTP/KK...">
     </div>
 
-    <!-- Kolom Baru: Jenis Kelamin -->
     <div class="form-group">
         <label for="jenis_kelamin">Jenis Kelamin</label>
         <select id="jenis_kelamin">
@@ -122,8 +118,8 @@
     </div>
 
     <div class="form-group">
-        <label for="sebagai_apa">Sebagai Apa? <span style="color: var(--text-muted); font-weight: normal; text-transform: lowercase;">(opsional)</span></label>
-        <input type="text" id="sebagai_apa" placeholder="Contoh: Ketua, Sekretaris, dll...">
+        <label for="bidang">Bidang <span style="color: var(--text-muted); font-weight: normal; text-transform: lowercase;">(opsional)</span></label>
+        <input type="text" id="bidang" placeholder="Contoh: Ketua, Sekretaris, dll...">
     </div>
 
     <div class="form-group">
@@ -138,7 +134,6 @@
 
     <button class="btn" id="btn-daftar" onclick="prosesPendaftaranMandiri()">Kirim & Buat QR Code</button>
 
-    <!-- Hasil Pembuatan QR Code -->
     <div id="result-section" class="qr-result-box">
         <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
         <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan download QR Code ini untuk ditunjukkan saat absensi.</p>
@@ -168,7 +163,7 @@
         let nama = document.getElementById('nama').value.trim();
         let jenisKelamin = document.getElementById('jenis_kelamin').value; // Nilai jenis kelamin
         let status = document.getElementById('status').value;
-        let sebagaiApa = document.getElementById('sebagai_apa').value.trim(); 
+        let bidang = document.getElementById('bidang').value.trim(); 
         let kelompok = document.getElementById('kelompok').value.trim();
         let desa = document.getElementById('desa').value.trim();
         let btnDaftar = document.getElementById('btn-daftar');
@@ -183,74 +178,4 @@
         const dataJemaah = {
             id_generus: idGenerus,
             nama: nama,
-            jenis_kelamin: jenisKelamin, // Sekarang sudah aktif kirim Jenis Kelamin
-            status: status,              // Sekarang sudah aktif kirim Dapukan
-            sebagai_apa: sebagaiApa,     // Sekarang sudah aktif kirim Detail Opsional
-            kelompok: kelompok,
-            desa: desa
-        };
-
-        // Simpan ke Supabase
-        let { error } = await _supabase.from('data_generus').insert([dataJemaah]);
-
-        if (error) {
-            if(error.code === '23505') {
-                buatIdOtomatis(); 
-                alert("Sistem mendeteksi ID sibuk. ID baru telah dibuat, silakan klik tombol sekali lagi!");
-            } else {
-                alert("Gagal mendaftar, silakan coba lagi: " + error.message);
-            }
-            btnDaftar.innerText = "Kirim & Buat QR Code";
-            btnDaftar.disabled = false;
-            return;
-        }
-
-        tampilkanQRCode(idGenerus, nama);
-    }
-
-    function tampilkanQRCode(idText, namaOrang) {
-        let qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = ""; 
-
-        new QRCode(qrContainer, {
-            text: idText,
-            width: 200,
-            height: 200,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-
-        document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
-        document.getElementById('result-section').style.display = "block";
-        document.getElementById('btn-daftar').style.display = "none";
-
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }
-
-    function unduhQRCode() {
-        let idText = document.getElementById('id_generus').value.trim();
-        let namaOrang = document.getElementById('nama').value.trim();
-        let namaFile = `QR_${idText}_${namaOrang.replace(/\s+/g, '_')}.png`;
-
-        let qrImg = document.querySelector("#qrcode img");
-        if (qrImg && qrImg.src) {
-            let link = document.createElement("a");
-            link.href = qrImg.src;
-            link.download = namaFile;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        } else {
-            let qrCanvas = document.querySelector("#qrcode canvas");
-            if(qrCanvas) {
-                let link = document.createElement("a");
-                link.href = qrCanvas.toDataURL("image/png");
-                link.download = namaFile;
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            } else {
-                alert("Gambar QR Code belum siap. Silakan screenshot layar HP Anda.");
-            }
-        }
-    }
-</script>
-</body>
-</html>
+            jenis_kelamin: jenisKelamin, // Sekarang sudah aktif kir
