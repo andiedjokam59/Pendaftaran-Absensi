@@ -52,7 +52,6 @@
         }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
         
-        /* Gaya khusus untuk input ID otomatis yang dikunci */
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
 
         .btn {
@@ -64,7 +63,6 @@
         }
         .btn:hover { background: var(--primary-hover); }
 
-        /* Kotak Hasil QR Code */
         .qr-result-box {
             margin-top: 24px; padding-top: 20px;
             border-top: 2px dashed var(--border-color);
@@ -144,16 +142,17 @@
 </div>
 
 <script>
-    // MASUKKAN KREDENSIAL SUPABASE ANDA DI SINI
-    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co/rest/v1/"; 
+    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Fungsi Otomatis Membuat ID Acak saat Halaman Dibuka
     function buatIdOtomatis() {
-        const teksAwalan = "IQ";
-        const angkaAcak = Math.floor(10000 + Math.random() * 90000); 
-        document.getElementById('id_generus').value = teksAwalan + angkaAcak;
+        // ID hanya akan dibuat jika kolom input masih kosong kosong
+        if(!document.getElementById('id_generus').value) {
+            const teksAwalan = "IQ";
+            const angkaAcak = Math.floor(10000 + Math.random() * 90000); 
+            document.getElementById('id_generus').value = teksAwalan + angkaAcak;
+        }
     }
 
     window.onload = buatIdOtomatis;
@@ -161,7 +160,7 @@
     async function prosesPendaftaranMandiri() {
         let idGenerus = document.getElementById('id_generus').value.trim();
         let nama = document.getElementById('nama').value.trim();
-        let jenisKelamin = document.getElementById('jenis_kelamin').value; // Nilai jenis kelamin
+        let jenisKelamin = document.getElementById('jenis_kelamin').value; 
         let status = document.getElementById('status').value;
         let bidang = document.getElementById('bidang').value.trim(); 
         let kelompok = document.getElementById('kelompok').value.trim();
@@ -178,4 +177,75 @@
         const dataJemaah = {
             id_generus: idGenerus,
             nama: nama,
-            jenis_kelamin: jenisKelamin, // Sekarang sudah aktif kir
+            jenis_kelamin: jenisKelamin, 
+            status: status,              
+            bidang: bidang,              
+            kelompok: kelompok,
+            desa: desa
+        };
+
+        let { error } = await _supabase.from('data_generus').insert([dataJemaah]);
+
+        if (error) {
+            if(error.code === '23505') {
+                // Jika ID bentrok di database, buatkan ID baru tanpa menghapus data input lainnya
+                document.getElementById('id_generus').value = "";
+                buatIdOtomatis(); 
+                alert("Sistem mendeteksi ID sibuk. ID baru telah dibuat otomatis, silakan klik tombol sekali lagi!");
+            } else {
+                alert("Gagal mendaftar, silakan coba lagi: " + error.message);
+            }
+            btnDaftar.innerText = "Kirim & Buat QR Code";
+            btnDaftar.disabled = false;
+            return;
+        }
+
+        tampilkanQRCode(idGenerus, nama);
+    }
+
+    function tampilkanQRCode(idText, namaOrang) {
+        let qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
+
+        new QRCode(qrContainer, {
+            text: idText,
+            width: 200,
+            height: 200,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
+        document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
+        document.getElementById('result-section').style.display = "block";
+        document.getElementById('btn-daftar').style.display = "none";
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
+    function unduhQRCode() {
+        let idText = document.getElementById('id_generus').value.trim();
+        let namaOrang = document.getElementById('nama').value.trim();
+        let namaFile = `QR_${idText}_${namaOrang.replace(/\s+/g, '_')}.png`;
+
+        let qrImg = document.querySelector("#qrcode img");
+        if (qrImg && qrImg.src) {
+            let link = document.createElement("a");
+            link.href = qrImg.src;
+            link.download = namaFile;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        } else {
+            let qrCanvas = document.querySelector("#qrcode canvas");
+            if(qrCanvas) {
+                let link = document.createElement("a");
+                link.href = qrCanvas.toDataURL("image/png");
+                link.download = namaFile;
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            } else {
+                alert("Gambar QR Code belum siap. Silakan screenshot layar HP Anda.");
+            }
+        }
+    }
+</script>
+</body>
+</html>
