@@ -177,7 +177,6 @@
         }
     }
 
-    // Fungsi untuk mengatur tampilan menu dinamis berdasarkan pilihan Status
     function handleStatusChange() {
         const statusValue = document.getElementById('status').value;
         const fieldUsia = document.getElementById('field-usia');
@@ -197,7 +196,7 @@
 
     window.onload = function() {
         buatIdOtomatis();
-        handleStatusChange(); // Jalankan sekali saat load pertama agar menu inisialisasi default (Generus)
+        handleStatusChange();
     };
 
     async function prosesPendaftaranMandiri() {
@@ -213,7 +212,6 @@
         if(!kelompok) return alert("Harap masukkan Nama Kelompok Anda!");
         if(!desa) return alert("Harap masukkan Wilayah Desa Anda!");
 
-        // Ambil nilai tambahan berdasarkan status saat ini
         let nilaiTambahan = "";
         if (status === "Generus") {
             nilaiTambahan = document.getElementById('usia').value;
@@ -225,13 +223,13 @@
         btnDaftar.innerText = "Menyimpan data...";
         btnDaftar.disabled = true;
 
-        // PENYESUAIAN DISINI: Key 'bidang' diganti menjadi '"usia/dapukan"' memakai petik ganda
+        // PERUBAHAN DISINI: Menggunakan key 'usia_dapukan' tanpa tanda petik ganda
         const dataJemaah = {
             id_generus: idGenerus,
             nama: nama,
             jenis_kelamin: jenisKelamin, 
             status: status,               
-            "usia/dapukan": nilaiTambahan, // Menyimpan Info Usia (jika Generus) atau Teks Dapukan (jika Pengurus)
+            usia_dapukan: nilaiTambahan, 
             kelompok: kelompok,
             desa: desa
         };
