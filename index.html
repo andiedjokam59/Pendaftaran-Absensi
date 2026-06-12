@@ -6,7 +6,7 @@
     <title>Pendaftaran Mandiri & QR Code</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -54,6 +54,12 @@
         
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
 
+        /* Animasi untuk menu dinamis */
+        .dynamic-field {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+
         .btn {
             width: 100%; padding: 14px; background: var(--primary);
             color: white; border: none; border-radius: 10px;
@@ -79,6 +85,11 @@
 
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
@@ -108,16 +119,28 @@
     </div>
 
     <div class="form-group">
-        <label for="status">Dapukan</label>
-        <select id="status">
+        <label for="status">Status</label>
+        <select id="status" onchange="handleStatusChange()">
             <option value="Generus">Generus</option>
             <option value="Pengurus">Pengurus</option>
         </select>
     </div>
 
-    <div class="form-group">
-        <label for="bidang">Bidang <span style="color: var(--text-muted); font-weight: normal; text-transform: lowercase;">(opsional)</span></label>
-        <input type="text" id="bidang" placeholder="Contoh: Ketua, Sekretaris, dll...">
+    <div class="form-group dynamic-field" id="field-usia">
+        <label for="usia">Usia</label>
+        <select id="usia">
+            <option value="PAUD">PAUD</option>
+            <option value="TK">TK</option>
+            <option value="Caberawit">Caberawit</option>
+            <option value="Pra Remaja">Pra Remaja</option>
+            <option value="Remaja">Remaja</option>
+            <option value="Usia Mandiri">Usia Mandiri</option>
+        </select>
+    </div>
+
+    <div class="form-group dynamic-field" id="field-dapukan">
+        <label for="input_dapukan">Dapukan</label>
+        <input type="text" id="input_dapukan" placeholder="Ketik dapukan/jabatan pengurus...">
     </div>
 
     <div class="form-group">
@@ -147,7 +170,6 @@
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     function buatIdOtomatis() {
-        // ID hanya akan dibuat jika kolom input masih kosong kosong
         if(!document.getElementById('id_generus').value) {
             const teksAwalan = "IQ";
             const angkaAcak = Math.floor(10000 + Math.random() * 90000); 
@@ -155,14 +177,34 @@
         }
     }
 
-    window.onload = buatIdOtomatis;
+    // Fungsi untuk mengatur tampilan menu dinamis berdasarkan pilihan Status
+    function handleStatusChange() {
+        const statusValue = document.getElementById('status').value;
+        const fieldUsia = document.getElementById('field-usia');
+        const fieldDapukan = document.getElementById('field-dapukan');
+
+        if (statusValue === "Generus") {
+            fieldUsia.style.display = "block";
+            fieldDapukan.style.display = "none";
+        } else if (statusValue === "Pengurus") {
+            fieldUsia.style.display = "none";
+            fieldDapukan.style.display = "block";
+        } else {
+            fieldUsia.style.display = "none";
+            fieldDapukan.style.display = "none";
+        }
+    }
+
+    window.onload = function() {
+        buatIdOtomatis();
+        handleStatusChange(); // Jalankan sekali saat load pertama agar menu inisialisasi default (Generus)
+    };
 
     async function prosesPendaftaranMandiri() {
         let idGenerus = document.getElementById('id_generus').value.trim();
         let nama = document.getElementById('nama').value.trim();
         let jenisKelamin = document.getElementById('jenis_kelamin').value; 
         let status = document.getElementById('status').value;
-        let bidang = document.getElementById('bidang').value.trim(); 
         let kelompok = document.getElementById('kelompok').value.trim();
         let desa = document.getElementById('desa').value.trim();
         let btnDaftar = document.getElementById('btn-daftar');
@@ -171,15 +213,27 @@
         if(!kelompok) return alert("Harap masukkan Nama Kelompok Anda!");
         if(!desa) return alert("Harap masukkan Wilayah Desa Anda!");
 
+        // Ambil nilai tambahan berdasarkan status saat ini
+        let nilaiTambahan = "";
+        if (status === "Generus") {
+            nilaiTambahan = document.getElementById('usia').value;
+        } else if (status === "Pengurus") {
+            nilaiTambahan = document.getElementById('input_dapukan').value.trim();
+            if(!nilaiTambahan) return alert("Harap masukkan Dapukan Anda!");
+        }
+
         btnDaftar.innerText = "Menyimpan data...";
         btnDaftar.disabled = true;
 
+        // Sesuaikan kolom database Anda. 
+        // Di sini saya asumsikan nilai tambahan dimasukkan ke kolom 'bidang' atau kolom kustom lainnya.
+        // Silakan sesuaikan nama properti sebelah kiri (misal: 'bidang' atau 'usia') sesuai struktur tabel database Supabase Anda.
         const dataJemaah = {
             id_generus: idGenerus,
             nama: nama,
             jenis_kelamin: jenisKelamin, 
-            status: status,              
-            bidang: bidang,              
+            status: status,               
+            bidang: nilaiTambahan, // Menyimpan Info Usia (jika Generus) atau Teks Dapukan (jika Pengurus)
             kelompok: kelompok,
             desa: desa
         };
@@ -188,7 +242,6 @@
 
         if (error) {
             if(error.code === '23505') {
-                // Jika ID bentrok di database, buatkan ID baru tanpa menghapus data input lainnya
                 document.getElementById('id_generus').value = "";
                 buatIdOtomatis(); 
                 alert("Sistem mendeteksi ID sibuk. ID baru telah dibuat otomatis, silakan klik tombol sekali lagi!");
