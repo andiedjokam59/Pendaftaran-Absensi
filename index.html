@@ -223,10 +223,10 @@
         btnDaftar.innerText = "Menyimpan data...";
         btnDaftar.disabled = true;
 
-        // PERUBAHAN DISINI: Menggunakan key 'usia_dapukan' tanpa tanda petik ganda
+        // PERUBAHAN DISINI: Key 'nama' diganti menjadi 'nama_lengkap' sesuai kolom baru Supabase
         const dataJemaah = {
             id_generus: idGenerus,
-            nama: nama,
+            nama_lengkap: nama,
             jenis_kelamin: jenisKelamin, 
             status: status,               
             usia_dapukan: nilaiTambahan, 
