@@ -225,15 +225,13 @@
         btnDaftar.innerText = "Menyimpan data...";
         btnDaftar.disabled = true;
 
-        // Sesuaikan kolom database Anda. 
-        // Di sini saya asumsikan nilai tambahan dimasukkan ke kolom 'bidang' atau kolom kustom lainnya.
-        // Silakan sesuaikan nama properti sebelah kiri (misal: 'bidang' atau 'usia') sesuai struktur tabel database Supabase Anda.
+        // PENYESUAIAN DISINI: Key 'bidang' diganti menjadi '"usia/dapukan"' memakai petik ganda
         const dataJemaah = {
             id_generus: idGenerus,
             nama: nama,
             jenis_kelamin: jenisKelamin, 
             status: status,               
-            bidang: nilaiTambahan, // Menyimpan Info Usia (jika Generus) atau Teks Dapukan (jika Pengurus)
+            "usia/dapukan": nilaiTambahan, // Menyimpan Info Usia (jika Generus) atau Teks Dapukan (jika Pengurus)
             kelompok: kelompok,
             desa: desa
         };
