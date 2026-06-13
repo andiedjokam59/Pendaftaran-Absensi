@@ -54,7 +54,6 @@
         
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
 
-        /* Animasi untuk menu dinamis */
         .dynamic-field {
             display: none;
             animation: fadeIn 0.3s ease-out;
@@ -75,11 +74,19 @@
             display: none; text-align: center;
             animation: slideUp 0.4s ease-out;
         }
-        #qrcode {
-            display: inline-block; padding: 12px;
-            background: white; border: 1px solid var(--border-color);
-            border-radius: 12px; margin-bottom: 12px;
+
+        #qrcode-wrapper {
+            display: inline-block;
+            padding: 12px;
+            background: #ffffff;
+            border: 3px solid var(--primary);
+            border-radius: 14px;
+            margin-bottom: 16px;
         }
+        #qrcode img, #qrcode canvas {
+            display: block;
+        }
+
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
@@ -157,16 +164,22 @@
 
     <div id="result-section" class="qr-result-box">
         <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan download QR Code ini untuk ditunjukkan saat absensi.</p>
-        <div id="qrcode"></div>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan download ID Card ini untuk ditunjukkan saat absensi.</p>
+        
+        <div id="qrcode-wrapper">
+            <div id="qrcode"></div>
+        </div>
+        
         <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
-        <button class="btn btn-download" onclick="unduhQRCode()">⬇ Simpan QR Code ke HP</button>
+        <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
     </div>
 </div>
 
 <script>
     const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas";
+    
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas"; 
+    
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     function buatIdOtomatis() {
@@ -223,7 +236,6 @@
         btnDaftar.innerText = "Menyimpan data...";
         btnDaftar.disabled = true;
 
-        // PERUBAHAN DISINI: Key 'nama' diganti menjadi 'nama_lengkap' sesuai kolom baru Supabase
         const dataJemaah = {
             id_generus: idGenerus,
             nama_lengkap: nama,
@@ -272,28 +284,124 @@
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-    function unduhQRCode() {
+    function unduhIDCard() {
         let idText = document.getElementById('id_generus').value.trim();
         let namaOrang = document.getElementById('nama').value.trim();
-        let namaFile = `QR_${idText}_${namaOrang.replace(/\s+/g, '_')}.png`;
+        let statusUser = document.getElementById('status').value.toUpperCase(); 
+        let namaFile = `ID_CARD_${idText}_${namaOrang.replace(/\s+/g, '_')}.png`;
 
-        let qrImg = document.querySelector("#qrcode img");
-        if (qrImg && qrImg.src) {
-            let link = document.createElement("a");
-            link.href = qrImg.src;
-            link.download = namaFile;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        } else {
-            let qrCanvas = document.querySelector("#qrcode canvas");
-            if(qrCanvas) {
-                let link = document.createElement("a");
-                link.href = qrCanvas.toDataURL("image/png");
-                link.download = namaFile;
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-            } else {
-                alert("Gambar QR Code belum siap. Silakan screenshot layar HP Anda.");
-            }
+        let qrCanvas = document.querySelector("#qrcode canvas");
+        if (!qrCanvas) {
+            alert("Gambar QR Code belum siap. Silakan klik tombol pendaftaran ulang.");
+            return;
         }
+
+        let c = document.createElement("canvas");
+        let ctx = c.getContext("2d");
+
+        let imgBg = new Image();
+        imgBg.crossOrigin = "anonymous"; 
+        
+        imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg"; 
+
+        imgBg.onload = function() {
+            c.width = imgBg.width;
+            c.height = imgBg.height;
+
+            // 1. Gambar template dasar
+            ctx.drawImage(imgBg, 0, 0, c.width, c.height);
+
+            // =========================================================
+            // BAGIAN A: MENULIS "ID GENERUS" / "ID PENGURUS" DI ATAS QR
+            // =========================================================
+            let teksJudul = `ID ${statusUser}`;
+            let fontSizeJudul = Math.round(c.width * 0.07); 
+            
+            // PERUBAHAN DISINI: Mengubah nama font menjadi Bookman Old Style
+            ctx.font = `bold ${fontSizeJudul}px "Bookman Old Style", Bookman, Georgia, serif`;
+            ctx.fillStyle = "#024731"; 
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            let judulY = c.height * 0.442; 
+            ctx.fillText(teksJudul, c.width / 2, judulY);
+
+            // =========================================================
+            // BAGIAN B: MENEMPELKAN QR CODE KE CANVAS
+            // =========================================================
+            let qrSize = c.width * 0.48; 
+            let qrx = (c.width - qrSize) / 2; 
+            let qry = c.height * 0.52; 
+
+            let padding = c.width * 0.03; 
+
+            // Gambar Background Putih Kotak QR
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
+            ctx.fill();
+
+            // Tempel gambar QR Code
+            ctx.drawImage(qrCanvas, qrx, qry, qrSize, qrSize);
+
+            // Gambar Garis Bingkai Hijau Pembungkus QR
+            ctx.strokeStyle = "#024731"; 
+            ctx.lineWidth = c.width * 0.009; 
+            ctx.beginPath();
+            ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
+            ctx.stroke();
+
+            // =========================================================
+            // BAGIAN C: MENULIS NAMA & ID DENGAN FITUR MULTI-LINE (AUTO WRAP)
+            // =========================================================
+            let teksIdentitas = `${namaOrang.toUpperCase()} - ${idText}`;
+            let fontSizeIdentitas = Math.round(c.width * 0.035); 
+            
+            ctx.font = `bold ${fontSizeIdentitas}px 'Inter', 'Helvetica Neue', Arial, sans-serif`;
+            ctx.fillStyle = "#024731"; 
+            ctx.textAlign = "center";
+            ctx.textBaseline = "top"; 
+
+            let maxLebarTeks = c.width * 0.85; 
+            let lineHeight = fontSizeIdentitas * 1.3; 
+            let awalY = c.height * 0.88; 
+
+            let kata = teksIdentitas.split(' ');
+            let baris = [];
+            let barisSekarang = '';
+
+            for (let n = 0; n < kata.length; n++) {
+                let testBaris = barisSekarang + kata[n] + ' ';
+                let metrics = ctx.measureText(testBaris);
+                let testWidth = metrics.width;
+                if (testWidth > maxLebarTeks && n > 0) {
+                    baris.push(barisSekarang.trim());
+                    barisSekarang = kata[n] + ' ';
+                } else {
+                    barisSekarang = testBaris;
+                }
+            }
+            baris.push(barisSekarang.trim());
+
+            for (let i = 0; i < baris.length; i++) {
+                let koordinatY = (baris.length === 1) ? awalY + (lineHeight * 0.3) : awalY + (i * lineHeight);
+                ctx.fillText(baris[i], c.width / 2, koordinatY);
+            }
+
+            // =========================================================
+            // BAGIAN D: METODE AUTO DOWNLOAD
+            // =========================================================
+            let link = document.createElement("a");
+            link.href = c.toDataURL("image/png");
+            link.download = namaFile;
+            document.body.appendChild(link); 
+            link.click(); 
+            document.body.removeChild(link);
+        };
+
+        imgBg.onerror = function() {
+            alert("Gagal mengambil file template dari Supabase. Pastikan nama file 'bg-idcard.jpg' dan bucket anda di-set PUBLIC.");
+        };
     }
 </script>
 </body>
