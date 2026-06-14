@@ -396,7 +396,7 @@
 
 			let link = document.createElement("a");
 			// Mengubah format ke image/jpeg dan set kualitas ke 0.8 (80%)
-			link.href = c.toDataURL("image/jpeg", 0.8); 
+			link.href = c.toDataURL("image/jpeg", 0.9); 
 			link.download = namaFile;            document.body.appendChild(link); 
             link.click(); 
             document.body.removeChild(link);
