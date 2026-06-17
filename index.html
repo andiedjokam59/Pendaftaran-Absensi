@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pendaftaran Mandiri & QR Code</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
@@ -51,9 +50,13 @@
             font-family: inherit; color: var(--text-dark);
         }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
+        
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
 
-        .dynamic-field { display: none; animation: fadeIn 0.3s ease-out; }
+        .dynamic-field {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
 
         .btn {
             width: 100%; padding: 14px; background: var(--primary);
@@ -71,91 +74,41 @@
             animation: slideUp 0.4s ease-out;
         }
 
+        #qrcode-wrapper {
+            display: inline-block;
+            padding: 12px;
+            background: #ffffff;
+            border: 3px solid var(--primary);
+            border-radius: 14px;
+            margin-bottom: 16px;
+        }
+        #qrcode img {
+            display: block;
+            width: 200px;
+            height: 200px;
+        }
+
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
-        /* ========================================================= */
-        /* LAYOUT BARU: DESAIN ID CARD BERBASIS HTML ELEMEN */
-        /* ========================================================= */
-        .idcard-html-wrapper {
-            display: inline-block;
+        .preview-holder {
+            margin-top: 16px;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .preview-holder img {
             width: 100%;
-            max-width: 300px;
-            height: 450px;
-            position: relative;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            margin: 16px auto;
-            background-color: #ffffff;
-        }
-
-        /* Gambar template background langsung via tag img biasa agar anti-error */
-        .idcard-bg-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .idcard-content {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-sizing: border-box;
-        }
-
-        .idcard-title {
-            margin-top: 185px; /* Menyesuaikan posisi teks "ID GENERUS" */
-            font-family: "Bookman Old Style", Bookman, Georgia, serif;
-            font-size: 22px;
-            font-weight: bold;
-            color: #024731;
-            text-transform: uppercase;
-        }
-
-        .idcard-qr-box {
-            margin-top: 15px;
-            padding: 8px;
-            background: #ffffff;
-            border: 3px solid #024731;
+            max-width: 280px;
             border-radius: 12px;
-            display: inline-block;
-        }
-        
-        .idcard-qr-box img {
-            display: block;
-            width: 140px;
-            height: 140px;
-        }
-
-        .idcard-footer-text {
-            margin-top: auto;
-            margin-bottom: 25px;
-            font-size: 13px;
-            font-weight: bold;
-            color: #024731;
-            width: 85%;
-            text-align: center;
-            line-height: 1.3;
-            text-transform: uppercase;
-        }
-
-        /* PERINTAH KHUSUS SAAT CETAK/PRINT: Menyembunyikan form, hanya menyisakan ID Card */
-        @media print {
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 0; max-width: 100%; }
-            h2, p.subtitle, .form-group, #btn-daftar, h3, .qr-result-box > p, .btn-download { display: none !important; }
-            .qr-result-box { display: block !important; border: none; padding: 0; margin: 0; }
-            .idcard-html-wrapper { box-shadow: none; margin: 0; border: none; }
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border: 2px solid var(--border-color);
         }
 
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-5px); }
             to { opacity: 1; transform: translateY(0); }
@@ -225,21 +178,19 @@
 
     <div id="result-section" class="qr-result-box">
         <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0;">Silakan simpan ID Card ini untuk absensi.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan download ID Card ini untuk ditunjukkan saat absensi.</p>
         
-        <div class="idcard-html-wrapper" id="idcard-print-area">
-            <img class="idcard-bg-img" src="https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg" alt="Background">
-            <div class="idcard-content">
-                <div class="idcard-title" id="card-status-title">ID GENERUS</div>
-                <div class="idcard-qr-box">
-                    <div id="qrcode"></div>
-                </div>
-                <div class="idcard-footer-text" id="card-identitas-text">NAMA USER - IQ12345</div>
-            </div>
+        <div id="qrcode-wrapper">
+            <div id="qrcode"></div>
         </div>
         
-        <p style="font-size: 11px; color: var(--text-muted); margin: 10px 0;">Tip: Jika tidak tersimpan otomatis, silakan lakukan <b>Screenshot</b> pada kartu di atas.</p>
-        <button class="btn btn-download" onclick="unduhIDCardViaPrint()">⬇ Simpan / Cetak ID Card</button>
+        <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
+        <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
+
+        <div id="preview-container" class="preview-holder">
+            <p style="font-size: 12px; color: var(--text-muted); margin: 12px 0 10px 0;">Jika file tidak otomatis terunduh, ketuk lama gambar kartu di bawah ini lalu pilih <b>"Simpan Gambar"</b>:</p>
+            <img id="idcard-fallback-img" alt="ID Card Preview">
+        </div>
     </div>
 </div>
 
@@ -327,37 +278,135 @@
             return;
         }
 
-        tampilkanIDCardHTML(idGenerus, nama, status);
+        tampilkanQRCode(idGenerus, nama);
     }
 
-    function tampilkanIDCardHTML(idText, namaOrang, statusUser) {
+    function tampilkanQRCode(idText, namaOrang) {
         let qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = ""; 
 
-        // Generate QR asli komponen Image, bukan Canvas agar anti-broken
-        new QRCode(qrContainer, {
-            text: idText,
-            width: 140,
-            height: 140,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
+        // GANTI STRATEGI: Menggunakan QR API gambar murni (bukan canvas eksternal script)
+        let imgQr = document.createElement("img");
+        imgQr.crossOrigin = "anonymous";
+        imgQr.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${idText}&ecc=H`;
+        imgQr.id = "qr-image-src";
+        qrContainer.appendChild(imgQr);
 
-        // Set tulisan ke elemen ID Card HTML
-        document.getElementById('card-status-title').innerText = `ID ${statusUser.toUpperCase()}`;
-        document.getElementById('card-identitas-text').innerText = `${namaOrang.toUpperCase()} - ${idText}`;
-        
+        document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
         document.getElementById('result-section').style.display = "block";
         document.getElementById('btn-daftar').style.display = "none";
 
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-    function unduhIDCardViaPrint() {
-        // Membuka jendela print bawaan smartphone. 
-        // CSS @media print di atas otomatis akan merapikan halaman sehingga hanya kartu yang tercetak/disimpan.
-        window.print();
+    function unduhIDCard() {
+        let idText = document.getElementById('id_generus').value.trim();
+        let namaOrang = document.getElementById('nama').value.trim();
+        let statusUser = document.getElementById('status').value.toUpperCase(); 
+        let namaFile = `ID_CARD_${idText}_${namaOrang.replace(/\s+/g, '_')}.jpg`;
+
+        let qrImgElement = document.getElementById("qr-image-src");
+        if (!qrImgElement) {
+            alert("Gambar QR Code belum siap.");
+            return;
+        }
+
+        let c = document.createElement("canvas");
+        let ctx = c.getContext("2d");
+
+        let imgBg = new Image();
+        imgBg.crossOrigin = "anonymous"; 
+        imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg"; 
+
+        imgBg.onload = function() {
+            c.width = imgBg.width;
+            c.height = imgBg.height;
+
+            // 1. Gambar background kartu dasar
+            ctx.drawImage(imgBg, 0, 0, c.width, c.height);
+
+            // 2. Tulisan Judul ID CARD
+            let teksJudul = `ID ${statusUser}`;
+            let fontSizeJudul = Math.round(c.width * 0.07); 
+            ctx.font = `bold ${fontSizeJudul}px "Bookman Old Style", Bookman, Georgia, serif`;
+            ctx.fillStyle = "#024731"; 
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(teksJudul, c.width / 2, c.height * 0.442);
+
+            // 3. Tempel QR Code (Murni Gambar Lintas Domain Aman)
+            let qrSize = c.width * 0.48; 
+            let qrx = (c.width - qrSize) / 2; 
+            let qry = c.height * 0.52; 
+            let padding = c.width * 0.03; 
+
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
+            ctx.fill();
+
+            ctx.drawImage(qrImgElement, qrx, qry, qrSize, qrSize);
+
+            ctx.strokeStyle = "#024731"; 
+            ctx.lineWidth = c.width * 0.009; 
+            ctx.beginPath();
+            ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
+            ctx.stroke();
+
+            // 4. Tulisan Identitas Nama & ID
+            let teksIdentitas = `${namaOrang.toUpperCase()} - ${idText}`;
+            let fontSizeIdentitas = Math.round(c.width * 0.035); 
+            ctx.font = `bold ${fontSizeIdentitas}px 'Inter', Arial, sans-serif`;
+            ctx.fillStyle = "#024731"; 
+            ctx.textBaseline = "top"; 
+
+            let maxLebarTeks = c.width * 0.85; 
+            let lineHeight = fontSizeIdentitas * 1.3; 
+            let awalY = c.height * 0.88; 
+
+            let kata = teksIdentitas.split(' ');
+            let baris = [];
+            let barisSekarang = '';
+
+            for (let n = 0; n < kata.length; n++) {
+                let testBaris = barisSekarang + kata[n] + ' ';
+                let metrics = ctx.measureText(testBaris);
+                if (metrics.width > maxLebarTeks && n > 0) {
+                    baris.push(barisSekarang.trim());
+                    barisSekarang = kata[n] + ' ';
+                } else {
+                    barisSekarang = testBaris;
+                }
+            }
+            baris.push(barisSekarang.trim());
+
+            for (let i = 0; i < baris.length; i++) {
+                let koordinatY = (baris.length === 1) ? awalY + (lineHeight * 0.3) : awalY + (i * lineHeight);
+                ctx.fillText(baris[i], c.width / 2, koordinatY);
+            }
+
+            // 5. Output ke JPG 90% Kualitas Tinggi
+            let dataUrlJpg = c.toDataURL("image/jpeg", 0.9); 
+
+            // Tampilkan preview JPG bersih tanpa error tanda tanya di bawah tombol download
+            let fallbackImg = document.getElementById("idcard-fallback-img");
+            fallbackImg.src = dataUrlJpg;
+            document.getElementById("preview-container").style.display = "block";
+
+            // Trigger download otomatis browser asli (.jpg)
+            let link = document.createElement("a");
+            link.href = dataUrlJpg; 
+            link.download = namaFile;            
+            document.body.appendChild(link); 
+            link.click(); 
+            document.body.removeChild(link);
+            
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        };
+
+        imgBg.onerror = function() {
+            alert("Gagal memproses background kartu.");
+        };
     }
 </script>
 </body>
