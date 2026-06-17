@@ -6,7 +6,6 @@
     <title>Pendaftaran Mandiri & QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -52,9 +51,13 @@
             font-family: inherit; color: var(--text-dark);
         }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
+        
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
 
-        .dynamic-field { display: none; animation: fadeIn 0.3s ease-out; }
+        .dynamic-field {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
 
         .btn {
             width: 100%; padding: 14px; background: var(--primary);
@@ -72,68 +75,52 @@
             animation: slideUp 0.4s ease-out;
         }
 
+        #qrcode-wrapper {
+            display: inline-block;
+            padding: 12px;
+            background: #ffffff;
+            border: 3px solid var(--primary);
+            border-radius: 14px;
+            margin-bottom: 16px;
+        }
+        #qrcode img {
+            display: block;
+            width: 200px;
+            height: 200px;
+        }
+
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
-        /* LAYOUT ASLI ID CARD HTML (DIDUKUNG SEMUA IPHONE) */
-        .idcard-capture-area {
-            display: inline-block;
-            width: 300px;
-            height: 450px;
-            position: relative;
-            border-radius: 16px;
-            overflow: hidden;
-            background-color: #ffffff;
-            text-align: left;
-        }
-
-        .idcard-bg-img {
-            width: 100%; height: 100%;
-            object-fit: cover; display: block;
-        }
-
-        .idcard-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center;
-            box-sizing: border-box;
-        }
-
-        .idcard-title {
-            margin-top: 188px;
-            font-family: "Bookman Old Style", Bookman, Georgia, serif;
-            font-size: 24px; font-weight: bold;
-            color: #024731; text-transform: uppercase;
-            text-shadow: 0.5px 0.5px 0px rgba(255,255,255,0.5);
-        }
-
-        .idcard-qr-box {
-            margin-top: 12px; padding: 6px;
-            background: #ffffff; border: 3px solid #024731;
-            border-radius: 12px; display: inline-block;
-        }
-        .idcard-qr-box img { display: block; width: 140px; height: 140px; }
-
-        .idcard-footer-text {
-            margin-top: auto; margin-bottom: 24px;
-            font-size: 13px; font-weight: 700; color: #024731;
-            width: 85%; text-align: center; line-height: 1.3;
-            text-transform: uppercase; word-wrap: break-word;
-        }
-
-        /* AREA FALLBACK / PREVIEW JPG */
         .preview-holder {
-            margin-top: 16px; display: none;
-            -webkit-user-select: none; user-select: none; 
+            margin-top: 16px;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none; 
         }
         .preview-holder img {
-            width: 100%; max-width: 280px; border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid var(--border-color);
-            display: inline-block; pointer-events: auto !important; -webkit-touch-callout: default !important; 
+            width: 100%;
+            max-width: 280px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border: 2px solid var(--border-color);
+            display: inline-block;
+            pointer-events: auto !important;
+            -webkit-touch-callout: default !important; 
         }
 
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -199,26 +186,21 @@
 
     <div id="result-section" class="qr-result-box">
         <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">ID Card Anda telah berhasil dibuat.</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan download ID Card ini untuk ditunjukkan saat absensi.</p>
         
-        <div style="width:100%; overflow:hidden; height:0px; opacity:0; position:absolute; left:-9999px;">
-            <div id="idcard-html-layout" class="idcard-capture-area">
-                <img class="idcard-bg-img" src="https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg" crossOrigin="anonymous">
-                <div class="idcard-overlay">
-                    <div class="idcard-title" id="card-status-title">ID GENERUS</div>
-                    <div class="idcard-qr-box">
-                        <div id="qrcode-target"></div>
-                    </div>
-                    <div class="idcard-footer-text" id="card-identitas-text">NAMA USER - IQ12345</div>
-                </div>
-            </div>
+        <div id="qrcode-wrapper">
+            <div id="qrcode"></div>
         </div>
         
-        <button class="btn btn-download" onclick="unduhIDCardSnapshot()">⬇ Simpan ID Card ke HP</button>
+        <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
+        <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
 
-        <div id="preview-container" class="preview-holder" style="display:block;">
-            <p style="font-size: 12px; color: var(--text-muted); margin: 14px 0 14px 0; padding: 0 10px; line-height: 1.4;">
-                Tekan tepat pada <b>tengah gambar kartu</b> di bawah ini selama 3 detik, lalu pilih <b>"Simpan Gambar"</b> atau <b>"Tambah ke Foto"</b>.
+        <div id="preview-container" class="preview-holder">
+            <p style="font-size: 13px; color: #dc2626; font-weight: 600; margin: 18px 0 6px 0;">
+                Gagal download otomatis?
+            </p>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; padding: 0 10px; line-height: 1.4;">
+                Tekan tepat pada <b>tengah gambar kartu</b> di bawah ini selama 3 detik, lalu pilih <b>"Simpan Gambar"</b>.
             </p>
             <div style="display: block; margin: 0 auto; width: 100%; text-align: center;">
                 <img id="idcard-fallback-img" alt="ID Card Preview">
@@ -311,66 +293,145 @@
             return;
         }
 
-        prosesBikinIDCardHTML(idGenerus, nama, status);
+        tampilkanQRCode(idGenerus, nama);
     }
 
-    function prosesBikinIDCardHTML(idText, namaOrang, statusUser) {
-        // 1. Set teks komponen kartu HTML
-        document.getElementById('card-status-title').innerText = `ID ${statusUser.toUpperCase()}`;
-        document.getElementById('card-identitas-text').innerText = `${namaOrang.toUpperCase()} - ${idText}`;
+    function tampilkanQRCode(idText, namaOrang) {
+        let qrContainer = document.getElementById("qrcode");
+        qrContainer.innerHTML = ""; 
 
-        // 2. Buat QR Code lokal di memori memakai QRious
-        let targetQr = document.getElementById("qrcode-target");
-        targetQr.innerHTML = "";
+        // Membuat elemen canvas tersembunyi sementara untuk QRious
         let hiddenCanvas = document.createElement("canvas");
-        new QRious({
+        
+        // Inisialisasi QRious langsung ke canvas lokal
+        let qr = new QRious({
             element: hiddenCanvas,
             value: idText,
-            size: 200,
+            size: 250,
             level: 'H'
         });
 
+        // Mengubah hasil render canvas lokal menjadi tag IMG murni (100% Bebas CORS)
         let imgQr = document.createElement("img");
         imgQr.src = hiddenCanvas.toDataURL("image/png");
-        targetQr.appendChild(imgQr);
+        imgQr.id = "qr-image-src";
+        qrContainer.appendChild(imgQr);
 
-        // 3. Eksekusi html2canvas setelah gambar background termuat sempurna
-        setTimeout(() => {
-            let elemenKartu = document.getElementById("idcard-html-layout");
-            
-            html2canvas(elemenKartu, {
-                useCORS: true,
-                allowTaint: false,
-                scale: 2, /* Meningkatkan ketajaman gambar hasil simpanan */
-                logging: false
-            }).then(canvasHasil => {
-                let dataUrlJpg = canvasHasil.toDataURL("image/jpeg", 0.95);
-                
-                // Masukkan hasil foto murni ke area fallback yang aman ditekan lama
-                let fallbackImg = document.getElementById("idcard-fallback-img");
-                fallbackImg.src = dataUrlJpg;
-                
-                document.getElementById('result-section').style.display = "block";
-                document.getElementById('btn-daftar').style.display = "none";
-                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-            });
-        }, 600);
+        document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
+        document.getElementById('result-section').style.display = "block";
+        document.getElementById('btn-daftar').style.display = "none";
+
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-    function unduhIDCardSnapshot() {
+    function unduhIDCard() {
         let idText = document.getElementById('id_generus').value.trim();
         let namaOrang = document.getElementById('nama').value.trim();
+        let statusUser = document.getElementById('status').value.toUpperCase(); 
         let namaFile = `ID_CARD_${idText}_${namaOrang.replace(/\s+/g, '_')}.jpg`;
-        let dataUrlJpg = document.getElementById("idcard-fallback-img").src;
 
-        if(!dataUrlJpg) return alert("Gambar belum siap, silakan tunggu sebentar.");
+        let qrImgElement = document.getElementById("qr-image-src");
+        if (!qrImgElement) {
+            alert("Gambar QR Code belum siap.");
+            return;
+        }
 
-        let link = document.createElement("a");
-        link.href = dataUrlJpg; 
-        link.download = namaFile;            
-        document.body.appendChild(link); 
-        link.click(); 
-        document.body.removeChild(link);
+        let c = document.createElement("canvas");
+        let ctx = c.getContext("2d");
+
+        let imgBg = new Image();
+        imgBg.crossOrigin = "anonymous"; 
+        imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg"; 
+
+        imgBg.onload = function() {
+            c.width = imgBg.width;
+            c.height = imgBg.height;
+
+            // 1. Render Background
+            ctx.drawImage(imgBg, 0, 0, c.width, c.height);
+
+            // 2. Render Judul Status
+            let teksJudul = `ID ${statusUser}`;
+            let fontSizeJudul = Math.round(c.width * 0.07); 
+            ctx.font = `bold ${fontSizeJudul}px "Bookman Old Style", Bookman, Georgia, serif`;
+            ctx.fillStyle = "#024731"; 
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(teksJudul, c.width / 2, c.height * 0.442);
+
+            // 3. Render QR Code (Murni Local Base64 - Kebal Tainted)
+            let qrSize = c.width * 0.48; 
+            let qrx = (c.width - qrSize) / 2; 
+            let qry = c.height * 0.52; 
+            let padding = c.width * 0.03; 
+
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
+            ctx.fill();
+
+            ctx.drawImage(qrImgElement, qrx, qry, qrSize, qrSize);
+
+            ctx.strokeStyle = "#024731"; 
+            ctx.lineWidth = c.width * 0.009; 
+            ctx.beginPath();
+            ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
+            ctx.stroke();
+
+            // 4. Render Teks Identitas
+            let teksIdentitas = `${namaOrang.toUpperCase()} - ${idText}`;
+            let fontSizeIdentitas = Math.round(c.width * 0.035); 
+            ctx.font = `bold ${fontSizeIdentitas}px 'Inter', Arial, sans-serif`;
+            ctx.fillStyle = "#024731"; 
+            ctx.textBaseline = "top"; 
+
+            let maxLebarTeks = c.width * 0.85; 
+            let lineHeight = fontSizeIdentitas * 1.3; 
+            let awalY = c.height * 0.88; 
+
+            let kata = teksIdentitas.split(' ');
+            let baris = [];
+            let barisSekarang = '';
+
+            for (let n = 0; n < kata.length; n++) {
+                let testBaris = barisSekarang + kata[n] + ' ';
+                let metrics = ctx.measureText(testBaris);
+                if (metrics.width > maxLebarTeks && n > 0) {
+                    baris.push(barisSekarang.trim());
+                    barisSekarang = kata[n] + ' ';
+                } else {
+                    barisSekarang = testBaris;
+                }
+            }
+            baris.push(barisSekarang.trim());
+
+            for (let i = 0; i < baris.length; i++) {
+                let koordinatY = (baris.length === 1) ? awalY + (lineHeight * 0.3) : awalY + (i * lineHeight);
+                ctx.fillText(baris[i], c.width / 2, koordinatY);
+            }
+
+            // 5. Konversi Akhir ke JPG Gambar Murni
+            let dataUrlJpg = c.toDataURL("image/jpeg", 0.9); 
+
+            // Pasang ke Gambar Fallback Preview
+            let fallbackImg = document.getElementById("idcard-fallback-img");
+            fallbackImg.src = dataUrlJpg;
+            document.getElementById("preview-container").style.display = "block";
+
+            // Trigger Unduh Otomatis Browser Asli
+            let link = document.createElement("a");
+            link.href = dataUrlJpg; 
+            link.download = namaFile;            
+            document.body.appendChild(link); 
+            link.click(); 
+            document.body.removeChild(link);
+            
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        };
+
+        imgBg.onerror = function() {
+            alert("Gagal memproses gambar latar belakang.");
+        };
     }
 </script>
 </body>
