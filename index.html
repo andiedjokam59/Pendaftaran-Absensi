@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pendaftaran Mandiri & QR Code</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
@@ -91,7 +92,6 @@
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
-        /* CSS Perbaikan Area Tekan Lama */
         .preview-holder {
             margin-top: 16px;
             display: none;
@@ -200,7 +200,7 @@
                 Gagal download otomatis?
             </p>
             <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; padding: 0 10px; line-height: 1.4;">
-                Tekan tepat pada <b>tengah gambar kartu</b> di bawah ini selama 3 detik, lalu pilih <b>"Simpan Gambar"</b> atau <b>"Tambah ke Foto"</b>.
+                Tekan tepat pada <b>tengah gambar kartu</b> di bawah ini selama 3 detik, lalu pilih <b>"Simpan Gambar"</b>.
             </p>
             <div style="display: block; margin: 0 auto; width: 100%; text-align: center;">
                 <img id="idcard-fallback-img" alt="ID Card Preview">
@@ -300,9 +300,20 @@
         let qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = ""; 
 
+        // Membuat elemen canvas tersembunyi sementara untuk QRious
+        let hiddenCanvas = document.createElement("canvas");
+        
+        // Inisialisasi QRious langsung ke canvas lokal
+        let qr = new QRious({
+            element: hiddenCanvas,
+            value: idText,
+            size: 250,
+            level: 'H'
+        });
+
+        // Mengubah hasil render canvas lokal menjadi tag IMG murni (100% Bebas CORS)
         let imgQr = document.createElement("img");
-        imgQr.crossOrigin = "anonymous";
-        imgQr.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${idText}&ecc=H`;
+        imgQr.src = hiddenCanvas.toDataURL("image/png");
         imgQr.id = "qr-image-src";
         qrContainer.appendChild(imgQr);
 
@@ -348,7 +359,7 @@
             ctx.textBaseline = "middle";
             ctx.fillText(teksJudul, c.width / 2, c.height * 0.442);
 
-            // 3. Render QR Code
+            // 3. Render QR Code (Murni Local Base64 - Kebal Tainted)
             let qrSize = c.width * 0.48; 
             let qrx = (c.width - qrSize) / 2; 
             let qry = c.height * 0.52; 
@@ -367,7 +378,7 @@
             ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
             ctx.stroke();
 
-            // 4. Render Teks Identitas Kelompok/Nama (Fix Typo Bug)
+            // 4. Render Teks Identitas
             let teksIdentitas = `${namaOrang.toUpperCase()} - ${idText}`;
             let fontSizeIdentitas = Math.round(c.width * 0.035); 
             ctx.font = `bold ${fontSizeIdentitas}px 'Inter', Arial, sans-serif`;
