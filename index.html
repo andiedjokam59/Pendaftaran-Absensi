@@ -90,6 +90,20 @@
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
+        /* Style Baru untuk wadah gambar alternatif jika download gagal */
+        .preview-holder {
+            margin-top: 16px;
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .preview-holder img {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            border: 2px solid var(--border-color);
+        }
+
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
@@ -172,6 +186,12 @@
         
         <p id="qr-info" style="font-size: 14px; font-weight: 700; margin: 0 0 16px 0; color: var(--text-dark);"></p>
         <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
+
+        <div id="preview-container" class="preview-holder">
+            <p style="font-size: 11px; color: #dc2626; font-weight: 600; margin: 12px 0 6px 0;">HP Anda memblokir unduhan otomatis?</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 10px 0;">Sentuh dan tahan (tekan lama) gambar di bawah, lalu pilih <b>"Simpan Gambar"</b> atau <b>"Download Gambar"</b>:</p>
+            <img id="idcard-fallback-img" alt="ID Card Preview">
+        </div>
     </div>
 </div>
 
@@ -301,7 +321,6 @@
 
         let imgBg = new Image();
         imgBg.crossOrigin = "anonymous"; 
-        
         imgBg.src = "https://gttavghryoadthnvwthd.supabase.co/storage/v1/object/public/id_card_barcode/bg-idcard.jpg"; 
 
         imgBg.onload = function() {
@@ -317,7 +336,6 @@
             let teksJudul = `ID ${statusUser}`;
             let fontSizeJudul = Math.round(c.width * 0.07); 
             
-            // PERUBAHAN DISINI: Mengubah nama font menjadi Bookman Old Style
             ctx.font = `bold ${fontSizeJudul}px "Bookman Old Style", Bookman, Georgia, serif`;
             ctx.fillStyle = "#024731"; 
             ctx.textAlign = "center";
@@ -378,6 +396,7 @@
                     baris.push(barisSekarang.trim());
                     barisSekarang = kata[n] + ' ';
                 } else {
+                    barisCurrent = testBaris;
                     barisSekarang = testBaris;
                 }
             }
@@ -389,17 +408,26 @@
             }
 
             // =========================================================
-            // BAGIAN D: METODE AUTO DOWNLOAD
+            // BAGIAN D: METODE AUTO DOWNLOAD & FALLBACK IMAGE
             // =========================================================
-			// Mengubah nama ekstensi file yang diunduh menjadi .jpg
-			namaFile = namaFile.replace(".png", ".jpg");
+            namaFile = namaFile.replace(".png", ".jpg");
+            let dataUrlJpg = c.toDataURL("image/jpeg", 0.9); 
 
-			let link = document.createElement("a");
-			// Mengubah format ke image/jpeg dan set kualitas ke 0.8 (80%)
-			link.href = c.toDataURL("image/jpeg", 0.9); 
-			link.download = namaFile;            document.body.appendChild(link); 
+            // Pasang hasil render ke elemen <img> alternatif (untuk ditekan lama di HP bermasalah)
+            let fallbackImg = document.getElementById("idcard-fallback-img");
+            fallbackImg.src = dataUrlJpg;
+            document.getElementById("preview-container").style.display = "block";
+
+            // Eksekusi trigger download otomatis browser asli
+            let link = document.createElement("a");
+            link.href = dataUrlJpg; 
+            link.download = namaFile;            
+            document.body.appendChild(link); 
             link.click(); 
             document.body.removeChild(link);
+            
+            // Otomatis arahkan layar ke bagian bawah agar user bisa melihat gambar fallback
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         };
 
         imgBg.onerror = function() {
