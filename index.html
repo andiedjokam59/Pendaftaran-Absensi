@@ -91,10 +91,15 @@
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
+        /* CSS Perbaikan Area Tekan Lama */
         .preview-holder {
             margin-top: 16px;
             display: none;
             animation: fadeIn 0.3s ease-out;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none; 
         }
         .preview-holder img {
             width: 100%;
@@ -102,6 +107,9 @@
             border-radius: 12px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             border: 2px solid var(--border-color);
+            display: inline-block;
+            pointer-events: auto !important;
+            -webkit-touch-callout: default !important; 
         }
 
         @keyframes slideUp {
@@ -188,8 +196,15 @@
         <button class="btn btn-download" onclick="unduhIDCard()">⬇ Simpan ID Card ke HP</button>
 
         <div id="preview-container" class="preview-holder">
-            <p style="font-size: 12px; color: var(--text-muted); margin: 12px 0 10px 0;">Jika file tidak otomatis terunduh, ketuk lama gambar kartu di bawah ini lalu pilih <b>"Simpan Gambar"</b>:</p>
-            <img id="idcard-fallback-img" alt="ID Card Preview">
+            <p style="font-size: 13px; color: #dc2626; font-weight: 600; margin: 18px 0 6px 0;">
+                Gagal download otomatis?
+            </p>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 14px 0; padding: 0 10px; line-height: 1.4;">
+                Tekan tepat pada <b>tengah gambar kartu</b> di bawah ini selama 3 detik, lalu pilih <b>"Simpan Gambar"</b> atau <b>"Tambah ke Foto"</b>.
+            </p>
+            <div style="display: block; margin: 0 auto; width: 100%; text-align: center;">
+                <img id="idcard-fallback-img" alt="ID Card Preview">
+            </div>
         </div>
     </div>
 </div>
@@ -285,7 +300,6 @@
         let qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = ""; 
 
-        // GANTI STRATEGI: Menggunakan QR API gambar murni (bukan canvas eksternal script)
         let imgQr = document.createElement("img");
         imgQr.crossOrigin = "anonymous";
         imgQr.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${idText}&ecc=H`;
@@ -322,10 +336,10 @@
             c.width = imgBg.width;
             c.height = imgBg.height;
 
-            // 1. Gambar background kartu dasar
+            // 1. Render Background
             ctx.drawImage(imgBg, 0, 0, c.width, c.height);
 
-            // 2. Tulisan Judul ID CARD
+            // 2. Render Judul Status
             let teksJudul = `ID ${statusUser}`;
             let fontSizeJudul = Math.round(c.width * 0.07); 
             ctx.font = `bold ${fontSizeJudul}px "Bookman Old Style", Bookman, Georgia, serif`;
@@ -334,7 +348,7 @@
             ctx.textBaseline = "middle";
             ctx.fillText(teksJudul, c.width / 2, c.height * 0.442);
 
-            // 3. Tempel QR Code (Murni Gambar Lintas Domain Aman)
+            // 3. Render QR Code
             let qrSize = c.width * 0.48; 
             let qrx = (c.width - qrSize) / 2; 
             let qry = c.height * 0.52; 
@@ -353,7 +367,7 @@
             ctx.roundRect(qrx - padding, qry - padding, qrSize + (padding * 2), qrSize + (padding * 2), c.width * 0.04);
             ctx.stroke();
 
-            // 4. Tulisan Identitas Nama & ID
+            // 4. Render Teks Identitas Kelompok/Nama (Fix Typo Bug)
             let teksIdentitas = `${namaOrang.toUpperCase()} - ${idText}`;
             let fontSizeIdentitas = Math.round(c.width * 0.035); 
             ctx.font = `bold ${fontSizeIdentitas}px 'Inter', Arial, sans-serif`;
@@ -385,15 +399,15 @@
                 ctx.fillText(baris[i], c.width / 2, koordinatY);
             }
 
-            // 5. Output ke JPG 90% Kualitas Tinggi
+            // 5. Konversi Akhir ke JPG Gambar Murni
             let dataUrlJpg = c.toDataURL("image/jpeg", 0.9); 
 
-            // Tampilkan preview JPG bersih tanpa error tanda tanya di bawah tombol download
+            // Pasang ke Gambar Fallback Preview
             let fallbackImg = document.getElementById("idcard-fallback-img");
             fallbackImg.src = dataUrlJpg;
             document.getElementById("preview-container").style.display = "block";
 
-            // Trigger download otomatis browser asli (.jpg)
+            // Trigger Unduh Otomatis Browser Asli
             let link = document.createElement("a");
             link.href = dataUrlJpg; 
             link.download = namaFile;            
@@ -405,7 +419,7 @@
         };
 
         imgBg.onerror = function() {
-            alert("Gagal memproses background kartu.");
+            alert("Gagal memproses gambar latar belakang.");
         };
     }
 </script>
