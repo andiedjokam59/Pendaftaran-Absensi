@@ -152,6 +152,7 @@
         <select id="status" onchange="handleStatusChange()">
             <option value="Generus">Generus</option>
             <option value="Pengurus">Pengurus</option>
+            <option value="MT">MT</option>
         </select>
     </div>
 
@@ -233,6 +234,9 @@
         } else if (statusValue === "Pengurus") {
             fieldUsia.style.display = "none";
             fieldDapukan.style.display = "block";
+        } else if (statusValue === "MT") {
+            fieldUsia.style.display = "none";
+            fieldDapukan.style.display = "none";
         } else {
             fieldUsia.style.display = "none";
             fieldDapukan.style.display = "none";
@@ -263,6 +267,8 @@
         } else if (status === "Pengurus") {
             nilaiTambahan = document.getElementById('input_dapukan').value.trim();
             if(!nilaiTambahan) return alert("Harap masukkan Dapukan Anda!");
+        } else if (status === "MT") {
+            nilaiTambahan = "-"; // Mengisi nilai default strip untuk kolom usia_dapukan di database
         }
 
         btnDaftar.innerText = "Menyimpan data...";
@@ -300,10 +306,8 @@
         let qrContainer = document.getElementById("qrcode");
         qrContainer.innerHTML = ""; 
 
-        // Membuat elemen canvas tersembunyi sementara untuk QRious
         let hiddenCanvas = document.createElement("canvas");
         
-        // Inisialisasi QRious langsung ke canvas lokal
         let qr = new QRious({
             element: hiddenCanvas,
             value: idText,
@@ -311,7 +315,6 @@
             level: 'H'
         });
 
-        // Mengubah hasil render canvas lokal menjadi tag IMG murni (100% Bebas CORS)
         let imgQr = document.createElement("img");
         imgQr.src = hiddenCanvas.toDataURL("image/png");
         imgQr.id = "qr-image-src";
@@ -359,7 +362,7 @@
             ctx.textBaseline = "middle";
             ctx.fillText(teksJudul, c.width / 2, c.height * 0.442);
 
-            // 3. Render QR Code (Murni Local Base64 - Kebal Tainted)
+            // 3. Render QR Code
             let qrSize = c.width * 0.48; 
             let qrx = (c.width - qrSize) / 2; 
             let qry = c.height * 0.52; 
@@ -413,12 +416,10 @@
             // 5. Konversi Akhir ke JPG Gambar Murni
             let dataUrlJpg = c.toDataURL("image/jpeg", 0.9); 
 
-            // Pasang ke Gambar Fallback Preview
             let fallbackImg = document.getElementById("idcard-fallback-img");
             fallbackImg.src = dataUrlJpg;
             document.getElementById("preview-container").style.display = "block";
 
-            // Trigger Unduh Otomatis Browser Asli
             let link = document.createElement("a");
             link.href = dataUrlJpg; 
             link.download = namaFile;            
