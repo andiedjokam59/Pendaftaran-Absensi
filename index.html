@@ -244,10 +244,10 @@
         imgBg.onload = function() {
             c.width = imgBg.width; c.height = imgBg.height;
             ctx.drawImage(imgBg, 0, 0);
-            ctx.font = `bold ${Math.round(c.width * 0.08)}px bookman old style`;
+            ctx.font = `bold ${Math.round(c.width * 0.1)}px bookman old style`;
             ctx.fillStyle = "#024731"; ctx.textAlign = "center";
             ctx.fillText(`ID ${statusUser}`, c.width / 2, c.height * 0.442);
-            ctx.drawImage(qrImgElement, (c.width - (c.width * 0.45)) / 2, c.height * 0.50, c.width * 0.44, c.width * 0.44);
+            ctx.drawImage(qrImgElement, (c.width - (c.width * 0.45)) / 2, c.height * 0.51, c.width * 0.45, c.width * 0.45);
             ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
             ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.85);
             
