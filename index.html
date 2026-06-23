@@ -244,7 +244,7 @@
         imgBg.onload = function() {
             c.width = imgBg.width; c.height = imgBg.height;
             ctx.drawImage(imgBg, 0, 0);
-            ctx.font = `bold ${Math.round(c.width * 0.075)}px bookman old style`;
+            ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
             ctx.fillStyle = "#024731"; ctx.textAlign = "center";
             ctx.fillText(`ID ${statusUser}`, c.width / 2, c.height * 0.455);
             ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
