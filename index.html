@@ -35,6 +35,26 @@
             padding: 28px 24px; border-radius: 20px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
             box-sizing: border-box;
+            position: relative;
+        }
+
+        .gear-icon {
+            position: absolute; top: 20px; right: 20px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.2s; z-index: 10;
+        }
+        .gear-icon:hover { transform: rotate(45deg); background: #f8fafc; }
+        .gear-icon svg { width: 18px; height: 18px; fill: var(--text-muted); }
+
+        .mode-badge {
+            display: none; background: #ea580c; color: white;
+            text-align: center; font-size: 11px; font-weight: 700;
+            padding: 6px; border-radius: 8px; margin-bottom: 16px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            animation: fadeIn 0.3s ease-out;
         }
 
         h2 { text-align: center; margin: 0 0 6px 0; color: var(--primary); font-size: 22px; font-weight: 700; }
@@ -54,6 +74,17 @@
         
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
 
+        select option.opt-non-aktif {
+            color: #dc2626 !important;
+            font-weight: bold;
+        }
+
+        .operator-search-panel {
+            display: none; background: #fff7ed; border: 1px solid #ffedd5;
+            padding: 14px; border-radius: 12px; margin-bottom: 16px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
         .dynamic-field { display: none; animation: fadeIn 0.3s ease-out; }
 
         .btn {
@@ -64,6 +95,14 @@
             box-shadow: 0 4px 12px rgba(4, 120, 87, 0.15);
         }
         .btn:hover { background: var(--primary-hover); }
+        .btn-orange { background: #ea580c; box-shadow: 0 4px 12px rgba(234, 88, 12, 0.15); }
+        .btn-orange:hover { background: #c2410c; }
+        
+        .btn-danger { background: #dc2626 !important; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2) !important; }
+        .btn-danger:hover { background: #b91c1c !important; }
+
+        .btn-batal { background: #64748b; margin-top: 6px; box-shadow: 0 4px 12px rgba(100, 116, 139, 0.15); }
+        .btn-batal:hover { background: #475569; }
 
         .qr-result-box { margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--border-color); display: none; text-align: center; animation: slideUp 0.4s ease-out; }
 
@@ -76,7 +115,6 @@
         .preview-holder { margin-top: 16px; display: none; animation: fadeIn 0.3s ease-out; }
         .preview-holder img { width: 100%; max-width: 280px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid var(--border-color); }
 
-        /* Custom Modal Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -101,6 +139,7 @@
             transition: background 0.2s;
         }
         .modal-btn:hover { background: var(--primary-hover); }
+        .modal-input { margin-bottom: 14px; text-align: center; font-size: 16px; letter-spacing: 2px; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); width: 80%; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -109,8 +148,33 @@
 <body>
 
 <div class="container">
-    <h2>Pendaftaran Mandiri</h2>
+    <div class="gear-icon" id="gear-btn-main" onclick="bukaAksesOperator()">
+        <svg viewBox="0 0 24 24">
+            <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.43-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+        </svg>
+    </div>
+
+    <div id="operator-badge" class="mode-badge">Mode Operator: Edit & Update Data</div>
+
+    <h2 id="form-main-title">Pendaftaran Mandiri</h2>
     <p class="subtitle">Insan Qur'any Tawangmangu</p>
+
+    <div id="panel-cari-operator" class="operator-search-panel">
+        <h4 style="margin: 0 0 10px 0; color: #c2410c; font-size: 13px; text-transform: uppercase;">Pencarian Data Anggota</h4>
+        
+        <div class="form-group">
+            <label style="color: #c2410c;">1. Pilih Kelompok</label>
+            <select id="cari_kelompok" onchange="loadDaftarNamaDariSupabase()">
+                <option value="">-- Pilih Kelompok --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label style="color: #c2410c;">2. Cari / Ketik Nama Lengkap</label>
+            <input type="text" id="cari_nama_input" list="daftar_nama_datalist" placeholder="Ketik nama untuk mencari..." onchange="handleNamaManualSelect()" disabled>
+            <datalist id="daftar_nama_datalist"></datalist>
+        </div>
+    </div>
     
     <div class="form-group">
         <label for="id_generus">ID Anggota Anda (Otomatis)</label>
@@ -168,9 +232,11 @@
     </div>
 
     <button class="btn" id="btn-daftar" onclick="prosesPendaftaranMandiri()">Kirim & Buat QR Code</button>
+    
+    <button class="btn btn-batal" id="btn-kembali-pendaftaran" onclick="aktifkanModeDaftar()" style="display: none;">Kembali ke Mode Pendaftaran</button>
 
     <div id="result-section" class="qr-result-box">
-        <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
+        <h3 id="result-title" style="margin: 0 0 4px 0; color: var(--primary); font-size: 16px;">✓ Pendaftaran Berhasil!</h3>
         <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 16px 0;">Silakan simpan ID Card Anda.</p>
         
         <div id="qrcode-wrapper"><div id="qrcode"></div></div>
@@ -184,17 +250,21 @@
     </div>
 </div>
 
-<!-- Custom Modal Element -->
 <div id="custom-modal" class="modal-overlay">
     <div class="modal-box">
         <div id="modal-title" class="modal-title">Pemberitahuan</div>
         <div id="modal-message" class="modal-message">Isi pesan di sini.</div>
-        <button class="modal-btn" onclick="tutupModal()">OK</button>
+        <div id="modal-input-container"></div>
+        <button id="modal-primary-btn" class="modal-btn" onclick="tutupModal()">OK</button>
     </div>
 </div>
 
 <script>
-    // Fungsi untuk membuat huruf pertama setiap kata menjadi kapital
+    const PIN_OPERATOR = "123456"; 
+    let modeForm = "DAFTAR"; 
+    let mapNamaKeId = {}; 
+    let statusAsli = ""; // Menambahkan variabel untuk melacak status awal sebelum diedit
+
     function formatKapital(el) {
         if (!el.value) return;
         el.value = el.value.split(' ').map(kata => {
@@ -206,10 +276,15 @@
     const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas"; 
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Fungsi Custom Modal menggantikan alert()
-    function tampilkanModal(judul, pesan) {
+    function tampilkanModal(judul, pesan, callbackAction = null) {
         document.getElementById('modal-title').innerText = judul;
         document.getElementById('modal-message').innerText = pesan;
+        document.getElementById('modal-input-container').innerHTML = "";
+        const btn = document.getElementById('modal-primary-btn');
+        btn.onclick = function() {
+            tutupModal();
+            if(callbackAction) callbackAction();
+        };
         document.getElementById('custom-modal').classList.add('active');
     }
 
@@ -217,8 +292,192 @@
         document.getElementById('custom-modal').classList.remove('active');
     }
 
+    function bukaAksesOperator() {
+        document.getElementById('modal-title').innerText = "Akses Operator";
+        document.getElementById('modal-message').innerText = "Masukkan PIN khusus operator kelompok:";
+        let htmlInput = `<input type="password" id="pin-input" class="modal-input" placeholder="******" maxlength="10">`;
+        document.getElementById('modal-input-container').innerHTML = htmlInput;
+
+        const btn = document.getElementById('modal-primary-btn');
+        btn.onclick = function() {
+            let pinInput = document.getElementById('pin-input').value;
+            if(pinInput === PIN_OPERATOR) {
+                tutupModal();
+                aktifkanModeUpdate();
+            } else {
+                tampilkanModal("Akses Ditolak", "PIN yang Anda masukkan salah!");
+            }
+        };
+        document.getElementById('custom-modal').classList.add('active');
+        document.getElementById('pin-input').focus();
+    }
+
+    async function aktifkanModeUpdate() {
+        modeForm = "UPDATE";
+        statusAsli = ""; // Reset status pelacak
+        
+        document.getElementById('gear-btn-main').style.display = "none";
+        document.getElementById('operator-badge').style.display = "block";
+        document.getElementById('panel-cari-operator').style.display = "block";
+        document.getElementById('btn-kembali-pendaftaran').style.display = "block"; 
+        document.getElementById('form-main-title').innerText = "Update Data Jama'ah";
+        
+        document.getElementById('btn-daftar').innerText = "Simpan Perubahan Data";
+        document.getElementById('btn-daftar').classList.add('btn-orange');
+        document.getElementById('btn-daftar').style.display = "block";
+        document.getElementById('result-section').style.display = "none";
+
+        let selectStatus = document.getElementById('status');
+        if (!document.getElementById('opt-status-nonaktif')) {
+            let optNonAktif = document.createElement('option');
+            optNonAktif.value = "Non Aktif";
+            optNonAktif.innerText = "Non Aktif (Hapus Data)";
+            optNonAktif.id = "opt-status-nonaktif";
+            optNonAktif.className = "opt-non-aktif";
+            selectStatus.appendChild(optNonAktif);
+        }
+
+        kosongkanSemuaKolomForm();
+
+        let { data, error } = await _supabase
+            .from('data_generus')
+            .select('kelompok');
+
+        if (!error && data) {
+            let listKelompokUnik = [...new Set(data.map(item => item.kelompok).filter(k => k))].sort();
+            let selectKelompok = document.getElementById('cari_kelompok');
+            selectKelompok.innerHTML = '<option value="">-- Pilih Kelompok --</option>';
+            
+            listKelompokUnik.forEach(kel => {
+                let opt = document.createElement('option');
+                opt.value = kel; opt.innerText = kel;
+                selectKelompok.appendChild(opt);
+            });
+        }
+        tampilkanModal("Mode Operator Aktif", "Silakan pilih kelompok terlebih dahulu untuk mencari / mengetik nama jama'ah.");
+    }
+
+    function aktifkanModeDaftar() {
+        modeForm = "DAFTAR";
+        statusAsli = "";
+        
+        document.getElementById('gear-btn-main').style.display = "flex";
+        document.getElementById('operator-badge').style.display = "none";
+        document.getElementById('panel-cari-operator').style.display = "none";
+        document.getElementById('btn-kembali-pendaftaran').style.display = "none";
+        document.getElementById('form-main-title').innerText = "Pendaftaran Mandiri";
+        
+        document.getElementById('btn-daftar').innerText = "Kirim & Buat QR Code";
+        document.getElementById('btn-daftar').classList.remove('btn-orange', 'btn-danger');
+        document.getElementById('btn-daftar').style.display = "block";
+        document.getElementById('result-section').style.display = "none";
+
+        let optNonAktif = document.getElementById('opt-status-nonaktif');
+        if (optNonAktif) {
+            optNonAktif.remove();
+        }
+
+        kosongkanSemuaKolomForm();
+        buatIdOtomatis();
+        handleStatusChange();
+    }
+
+    async function loadDaftarNamaDariSupabase() {
+        let kelompokTerpilih = document.getElementById('cari_kelompok').value;
+        let inputNama = document.getElementById('cari_nama_input');
+        let datalistNama = document.getElementById('daftar_nama_datalist');
+        
+        inputNama.value = "";
+        datalistNama.innerHTML = "";
+        mapNamaKeId = {}; 
+
+        if(!kelompokTerpilih) {
+            inputNama.disabled = true;
+            inputNama.placeholder = "Pilih Kelompok Dulu...";
+            return;
+        }
+
+        inputNama.disabled = false;
+        inputNama.placeholder = "Ketik/pilih nama jamaah...";
+
+        let { data, error } = await _supabase
+            .from('data_generus')
+            .select('id_generus, nama_lengkap')
+            .eq('kelompok', kelompokTerpilih)
+            .order('nama_lengkap', { ascending: true });
+
+        if (error || !data || data.length === 0) {
+            inputNama.placeholder = "Tidak ada data di kelompok ini";
+            return;
+        }
+
+        data.forEach(user => {
+            let opt = document.createElement('option');
+            opt.value = user.nama_lengkap; 
+            datalistNama.appendChild(opt);
+            mapNamaKeId[user.nama_lengkap.toLowerCase().trim()] = user.id_generus;
+        });
+    }
+
+    function handleNamaManualSelect() {
+        let namaKetik = document.getElementById('cari_nama_input').value.trim();
+        let idTerpilih = mapNamaKeId[namaKetik.toLowerCase()];
+        
+        if (idTerpilih) {
+            tarikDataAnggotaTerpilih(idTerpilih);
+        } else if (namaKetik !== "") {
+            tampilkanModal("Data Tidak Ditemukan", "Nama yang diketik tidak terdaftar di kelompok yang dipilih. Pastikan pilihan dari daftar atau ejaan benar.");
+        }
+    }
+
+    async function tarikDataAnggotaTerpilih(idTerpilih) {
+        let { data, error } = await _supabase
+            .from('data_generus')
+            .select('*')
+            .eq('id_generus', idTerpilih)
+            .single();
+
+        if (error || !data) return;
+
+        document.getElementById('id_generus').value = data.id_generus;
+        document.getElementById('nama').value = data.nama_lengkap;
+        document.getElementById('jenis_kelamin').value = data.jenis_kelamin;
+        document.getElementById('status').value = data.status;
+        
+        // Simpan nilai status asli database ke variabel pelacak
+        statusAsli = data.status;
+        
+        // Sembunyikan panel hasil QR lama saat memuat nama baru
+        document.getElementById('result-section').style.display = "none";
+
+        handleStatusChange();
+
+        if (data.status === "Generus") {
+            document.getElementById('usia').value = data.usia_dapukan;
+        } else if (data.status === "Pengurus" || data.status === "MT/MS") {
+            document.getElementById('input_dapukan').value = data.usia_dapukan;
+        }
+
+        document.getElementById('kelompok').value = data.kelompok;
+        document.getElementById('desa').value = data.desa;
+    }
+
+    function kosongkanSemuaKolomForm() {
+        document.getElementById('id_generus').value = "";
+        document.getElementById('nama').value = "";
+        document.getElementById('jenis_kelamin').value = "Laki-laki";
+        document.getElementById('status').value = "Generus";
+        document.getElementById('usia').value = "PAUD";
+        document.getElementById('input_dapukan').value = "";
+        document.getElementById('kelompok').value = "";
+        document.getElementById('desa').value = "";
+        document.getElementById('cari_nama_input').value = "";
+        statusAsli = "";
+        handleStatusChange();
+    }
+
     function buatIdOtomatis() {
-        if(!document.getElementById('id_generus').value) {
+        if(modeForm === "DAFTAR" && !document.getElementById('id_generus').value) {
             const angkaAcak = Math.floor(10000 + Math.random() * 90000); 
             document.getElementById('id_generus').value = "IQ" + angkaAcak;
         }
@@ -226,10 +485,20 @@
 
     function handleStatusChange() {
         const statusValue = document.getElementById('status').value;
+        const btnDaftar = document.getElementById('btn-daftar');
         
-        // Aturan visibilitas kolom
         document.getElementById('field-usia').style.display = (statusValue === "Generus") ? "block" : "none";
         document.getElementById('field-dapukan').style.display = (statusValue === "Pengurus" || statusValue === "MT/MS") ? "block" : "none";
+        
+        if (statusValue === "Non Aktif") {
+            btnDaftar.innerText = "Hapus Data Secara Permanen";
+            btnDaftar.classList.remove('btn-orange');
+            btnDaftar.classList.add('btn-danger');
+        } else if (modeForm === "UPDATE") {
+            btnDaftar.innerText = "Simpan Perubahan Data";
+            btnDaftar.classList.remove('btn-danger');
+            btnDaftar.classList.add('btn-orange');
+        }
     }
 
     window.onload = function() { buatIdOtomatis(); handleStatusChange(); };
@@ -242,8 +511,37 @@
         let desa = document.getElementById('desa').value.trim();
         let btn = document.getElementById('btn-daftar');
 
-        if(!nama || !kelompok || !desa) {
-            return tampilkanModal("Data Belum Lengkap", "Harap lengkapi semua data!");
+        if(!idGenerus || !nama) {
+            return tampilkanModal("Data Belum Lengkap", "Harap pilih nama jamaah terlebih dahulu sampai ID Anggota terisi!");
+        }
+
+        if (modeForm === "UPDATE" && status === "Non Aktif") {
+            btn.innerText = "Menghapus..."; btn.disabled = true;
+            
+            let { data, error } = await _supabase
+                .from('data_generus')
+                .delete()
+                .eq('id_generus', idGenerus)
+                .select();
+
+            if (error) {
+                tampilkanModal("Gagal Menghapus", "Terjadi kesalahan: " + error.message);
+                btn.innerText = "Hapus Data Secara Permanen"; btn.disabled = false;
+            } else if (!data || data.length === 0) {
+                tampilkanModal("Gagal Menghapus", "Data gagal dihapus. Periksa kembali kebijakan RLS DELETE di Supabase Anda.");
+                btn.innerText = "Hapus Data Secara Permanen"; btn.disabled = false;
+            } else {
+                tampilkanModal("Data Terhapus!", "Data anggota dengan ID " + idGenerus + " telah berhasil dihapus secara otomatis dari Supabase.", function() {
+                    kosongkanSemuaKolomForm();
+                    btn.disabled = false;
+                    loadDaftarNamaDariSupabase();
+                });
+            }
+            return;
+        }
+
+        if(!kelompok || !desa) {
+            return tampilkanModal("Data Belum Lengkap", "Harap lengkapi Kelompok dan Desa!");
         }
 
         let nilaiTambahan = "-";
@@ -254,22 +552,64 @@
             if (!nilaiTambahan) {
                 return tampilkanModal("Data Belum Lengkap", "Harap masukkan Dapukan!");
             }
-        } else if (status === "Jama'ah Umum") {
-            nilaiTambahan = "-";
         }
         
-        btn.innerText = "Menyimpan..."; btn.disabled = true;
+        btn.innerText = "Memproses..."; btn.disabled = true;
 
-        let { error } = await _supabase.from('data_generus').insert([{
-            id_generus: idGenerus, nama_lengkap: nama, jenis_kelamin: document.getElementById('jenis_kelamin').value,
-            status: status, usia_dapukan: nilaiTambahan, kelompok: kelompok, desa: desa
-        }]);
+        if (modeForm === "DAFTAR") {
+            let { error } = await _supabase.from('data_generus').insert([{
+                id_generus: idGenerus, nama_lengkap: nama, jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                status: status, usia_dapukan: nilaiTambahan, kelompok: kelompok, desa: desa
+            }]);
 
-        if (error) {
-            tampilkanModal("Gagal Menyimpan", "Gagal mendaftar: " + error.message);
-            btn.innerText = "Kirim & Buat QR Code"; btn.disabled = false;
-        } else {
-            tampilkanQRCode(idGenerus, nama);
+            if (error) {
+                tampilkanModal("Gagal Menyimpan", "Gagal mendaftar: " + error.message);
+                btn.innerText = "Kirim & Buat QR Code"; btn.disabled = false;
+            } else {
+                document.getElementById('result-title').innerText = "✓ Pendaftaran Berhasil!";
+                tampilkanQRCode(idGenerus, nama);
+            }
+        } else if (modeForm === "UPDATE") {
+            let { data, error } = await _supabase
+                .from('data_generus')
+                .update({
+                    nama_lengkap: nama, 
+                    jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                    status: status, 
+                    usia_dapukan: nilaiTambahan, 
+                    kelompok: kelompok, 
+                    desa: desa
+                })
+                .eq('id_generus', idGenerus)
+                .select();
+
+            if (error) {
+                tampilkanModal("Gagal Perbarui", "Supabase Error: " + error.message);
+                btn.innerText = "Simpan Perubahan Data"; btn.disabled = false;
+            } else if (!data || data.length === 0) {
+                tampilkanModal("Database Tidak Berubah", "Gagal mengubah data. Pastikan izin UPDATE di RLS Supabase aktif.");
+                btn.innerText = "Simpan Perubahan Data"; btn.disabled = false;
+            } else {
+                // LOGIKA TERBARU: Bandingkan status baru dengan status asli saat di-load
+                if (status !== statusAsli) {
+                    document.getElementById('result-title').innerText = "✓ Status Berubah & Berhasil Diperbarui!";
+                    tampilkanQRCode(idGenerus, nama);
+                    
+                    tampilkanModal("Pembaruan Berhasil!", "Data Anggota " + idGenerus + " berhasil diperbarui. Karena STATUS BERUBAH, gambar ID Card baru dengan status '" + status + "' siap disimpan di bawah.", function() {
+                        btn.disabled = false;
+                        statusAsli = status; // Perbarui status acuan ke status yang baru
+                        loadDaftarNamaDariSupabase();
+                    });
+                } else {
+                    // Jika status SAMA, sembunyikan kotak QR hasil (jika sebelumnya ada sisa render)
+                    document.getElementById('result-section').style.display = "none";
+                    
+                    tampilkanModal("Perubahan Disimpan", "Data Anggota " + idGenerus + " berhasil diperbarui. (QR Code tidak dibuat ulang karena tidak ada perubahan status).", function() {
+                        btn.disabled = false;
+                        loadDaftarNamaDariSupabase();
+                    });
+                }
+            }
         }
     }
 
@@ -284,16 +624,17 @@
         qrContainer.appendChild(imgQr);
         document.getElementById('qr-info').innerText = `${namaOrang} [${idText}]`;
         document.getElementById('result-section').style.display = "block";
-        document.getElementById('btn-daftar').style.display = "none";
+        
+        if (modeForm === "DAFTAR") {
+            document.getElementById('btn-daftar').style.display = "none";
+        }
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 
-	function unduhIDCard() {
+    function unduhIDCard() {
         let idText = document.getElementById('id_generus').value.trim();
         let namaOrang = document.getElementById('nama').value.trim();
         let statusUser = document.getElementById('status').value; 
-        
-        // Kondisi untuk mengubah JAMA'AH UMUM menjadi JAMA'AH saja
         let statusTeksFormasi = (statusUser === "Jama'ah Umum") ? "JAMA'AH" : statusUser.toUpperCase();
 
         let qrImgElement = document.getElementById("qr-image-src");
@@ -306,12 +647,9 @@
         imgBg.onload = function() {
             c.width = imgBg.width; c.height = imgBg.height;
             ctx.drawImage(imgBg, 0, 0);
-            ctx.font = `bold ${Math.round(c.width * 0.075)}px bookman old style`;
+            ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
             ctx.fillStyle = "#024731"; ctx.textAlign = "center";
-            
-            // Menggunakan variabel statusTeksFormasi yang telah dikondisikan
             ctx.fillText(`ID ${statusTeksFormasi}`, c.width / 2, c.height * 0.455);
-            
             ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
             ctx.font = `bold ${Math.round(c.width * 0.035)}px Inter`;
             ctx.fillText(`${namaOrang.toUpperCase()} - ${idText}`, c.width / 2, c.height * 0.87);
@@ -320,7 +658,7 @@
             document.getElementById("idcard-fallback-img").src = dataUrl;
             document.getElementById("preview-container").style.display = "block";
             let link = document.createElement("a");
-            link.href = dataUrl; link.download = `ID_CARD_${idText}.jpg`; link.click();
+            link.href = dataUrl; link.download = `ID_CARD_${statusTeksFormasi}_${idText}.jpg`; link.click();
         };
     }
 </script>
