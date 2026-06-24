@@ -18,7 +18,6 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --danger: #ef4444;
-            --danger-hover: #dc2626;
         }
 
         body {
@@ -40,19 +39,12 @@
             position: relative;
         }
 
-        /* Icon Gear Style */
         .gear-icon {
-            position: absolute;
-            top: 24px;
-            right: 24px;
-            cursor: pointer;
-            color: var(--text-muted);
+            position: absolute; top: 24px; right: 24px;
+            cursor: pointer; color: var(--text-muted);
             transition: color 0.2s, transform 0.3s;
         }
-        .gear-icon:hover {
-            color: var(--primary);
-            transform: rotate(45deg);
-        }
+        .gear-icon:hover { color: var(--primary); transform: rotate(45deg); }
 
         h2 { text-align: center; margin: 0 0 6px 0; color: var(--primary); font-size: 22px; font-weight: 700; }
         p.subtitle { text-align: center; color: var(--text-muted); font-size: 13px; margin: 0 0 24px 0; font-weight: 500; }
@@ -68,7 +60,6 @@
             font-family: inherit; color: var(--text-dark);
         }
         input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.1); }
-        
         input[readonly] { background-color: #f8fafc; color: #475569; font-weight: 700; letter-spacing: 0.5px; border-style: dashed; }
 
         .dynamic-field { display: none; animation: fadeIn 0.3s ease-out; }
@@ -83,17 +74,25 @@
         .btn:hover { background: var(--primary-hover); }
 
         .qr-result-box { margin-top: 24px; padding-top: 20px; border-top: 2px dashed var(--border-color); display: none; text-align: center; animation: slideUp 0.4s ease-out; }
-
         #qrcode-wrapper { display: inline-block; padding: 12px; background: #ffffff; border: 3px solid var(--primary); border-radius: 14px; margin-bottom: 16px; }
         #qrcode img { display: block; width: 200px; height: 200px; }
-
         .btn-download { background: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
         .btn-download:hover { background: #1d4ed8; }
 
         .preview-holder { margin-top: 16px; display: none; animation: fadeIn 0.3s ease-out; }
         .preview-holder img { width: 100%; max-width: 280px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid var(--border-color); }
 
-        /* Modal / Pop-up Style */
+        /* NOTIFIKASI CUSTOM (Toast Alert) */
+        #custom-alert {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-40px);
+            background: #1e293b; color: #ffffff; padding: 12px 20px; border-radius: 12px;
+            font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
+            z-index: 2000; display: flex; align-items: center; gap: 10px;
+            opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: none;
+        }
+        #custom-alert.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* MODAL / POP-UP OPERATOR */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
@@ -101,14 +100,19 @@
             z-index: 1000; display: none; opacity: 0; transition: opacity 0.3s ease;
         }
         .modal-box {
-            width: 90%; max-width: 380px; background: white;
+            width: 90%; max-width: 390px; background: white;
             padding: 24px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
             position: relative; animation: slideUp 0.3s ease-out;
         }
-        .modal-close {
-            position: absolute; top: 16px; right: 16px; cursor: pointer;
-            font-size: 20px; color: var(--text-muted); font-weight: bold;
+        .modal-close { position: absolute; top: 16px; right: 16px; cursor: pointer; font-size: 20px; color: var(--text-muted); font-weight: bold; }
+
+        .info-preview-box {
+            background: #f8fafc; border: 1px solid var(--border-color);
+            padding: 12px; border-radius: 10px; margin-bottom: 16px; font-size: 13px; display: none;
         }
+        .info-row { display: flex; margin-bottom: 4px; }
+        .info-label { width: 100px; color: var(--text-muted); font-weight: 600; }
+        .info-value { color: var(--text-dark); font-weight: 700; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
@@ -116,8 +120,12 @@
 </head>
 <body>
 
+<div id="custom-alert">
+    <span id="alert-icon">💡</span>
+    <span id="alert-message">Notifikasi disini</span>
+</div>
+
 <div class="container">
-    <!-- Icon Gear Pengaturan -->
     <div class="gear-icon" onclick="bukaAksesOperator()" title="Menu Operator Kelompok">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
     </div>
@@ -196,33 +204,53 @@
     </div>
 </div>
 
-<!-- MODAL UPDATE DATA OPERATOR -->
 <div id="operator-modal" class="modal-overlay">
     <div class="modal-box">
         <div class="modal-close" onclick="tutupModal()">&times;</div>
         <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 18px; text-align: center;">Update Status Anggota</h3>
-        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 20px 0; text-align: center;">Khusus Operator Kelompok</p>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 20px 0; text-align: center;">Menu Khusus Operator Kelompok</p>
         
         <div class="form-group">
-            <label for="update_id_generus">ID Anggota (Contoh: IQ12345)</label>
-            <input type="text" id="update_id_generus" placeholder="Masukkan ID Anggota...">
+            <label for="update_nama_generus">Nama Lengkap Anggota</label>
+            <input type="text" id="update_nama_generus" placeholder="Ketik Nama Lengkap..." oninput="cariDataAnggotaBerdasarNama(this.value)">
+        </div>
+
+        <div id="info-preview" class="info-preview-box">
+            <div class="info-row"><div class="info-label">ID Anggota</div><div id="view-id" class="info-value">-</div></div>
+            <div class="info-row"><div class="info-label">Kelompok</div><div id="view-kelompok" class="info-value">-</div></div>
+            <input type="hidden" id="target_id_terpilih"> 
         </div>
 
         <div class="form-group">
-            <label for="update_status_pernikahan">Update Status</label>
-            <select id="update_status_pernikahan">
+            <label for="update_status_opsi">Update Status Menjadi</label>
+            <select id="update_status_opsi">
                 <option value="Menikah">Menikah</option>
                 <option value="Non Aktif">Non Aktif (Meninggal Dunia)</option>
             </select>
         </div>
 
-        <button class="btn" id="btn-update-status" onclick="eksekusiUpdateStatus()">Update Data</button>
+        <button class="btn" id="btn-update-status" onclick="eksekusiUpdateStatus()">Update Status</button>
     </div>
 </div>
 
 <script>
-    // Konfigurasi sandi masuk operator
-    const SANDI_OPERATOR = "operatorIQ"; // Silakan ubah kata sandi ini sesuai kebutuhan
+    const SANDI_OPERATOR = "operatorIQ"; 
+    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas"; 
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Fungsi Notifikasi Custom Pengganti Alert Bawaan Browser
+    function tampilkanNotif(pesan, jenis = "sukses") {
+        const alertBox = document.getElementById("custom-alert");
+        const alertIcon = document.getElementById("alert-icon");
+        const alertMsg = document.getElementById("alert-message");
+
+        alertIcon.innerText = jenis === "sukses" ? "✅" : jenis === "error" ? "❌" : "💡";
+        alertMsg.innerText = pesan;
+        
+        alertBox.classList.add("show");
+        setTimeout(() => { alertBox.classList.remove("show"); }, 3500);
+    }
 
     function formatKapital(el) {
         if (!el.value) return;
@@ -230,10 +258,6 @@
             return kata.charAt(0).toUpperCase() + kata.slice(1).toLowerCase();
         }).join(' ');
     }
-
-    const SUPABASE_URL = "https://gttavghryoadthnvwthd.supabase.co"; 
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0dGF2Z2hyeW9hZHRobnZ3dGhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5NDQsImV4cCI6MjA5NjQ3ODk0NH0.0O7I9EqSaiQq8_LKMJS9U-XDuitY6sPfYQVtBsJAeas"; 
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     function buatIdOtomatis() {
         if(!document.getElementById('id_generus').value) {
@@ -250,17 +274,17 @@
 
     window.onload = function() { buatIdOtomatis(); handleStatusChange(); };
 
-    // --- FITUR UPDATE DATA OPERATOR ---
+    // --- MANAJEMEN AKSES OPERATOR ---
     function bukaAksesOperator() {
         let inputSandi = prompt("Masukkan Sandi Akses Operator:");
-        if (inputSandi === null) return; // Jika batal
+        if (inputSandi === null) return;
         
         if (inputSandi === SANDI_OPERATOR) {
             let modal = document.getElementById('operator-modal');
             modal.style.display = "flex";
             setTimeout(() => { modal.style.opacity = "1"; }, 10);
         } else {
-            alert("Sandi salah! Akses ditolak.");
+            tampilkanNotif("Sandi salah! Akses ditolak.", "error");
         }
     }
 
@@ -268,27 +292,60 @@
         let modal = document.getElementById('operator-modal');
         modal.style.opacity = "0";
         setTimeout(() => { modal.style.display = "none"; }, 300);
-        document.getElementById('update_id_generus').value = "";
+        document.getElementById('update_nama_generus').value = "";
+        document.getElementById('target_id_terpilih').value = "";
+        document.getElementById('info-preview').style.display = "none";
     }
 
+    // Fungsi Pencarian Real-time Data Berdasarkan Nama Lengkap di Supabase (Menggunakan ilike / tidak sensitif huruf besar-kecil)
+    async function cariDataAnggotaBerdasarNama(namaInput) {
+        namaInput = namaInput.trim();
+        const previewBox = document.getElementById('info-preview');
+        
+        if(namaInput.length < 3) {
+            previewBox.style.display = "none";
+            document.getElementById('target_id_terpilih').value = "";
+            return;
+        }
+
+        // Mencari nama lengkap yang mirip di Supabase
+        let { data, error } = await _supabase
+            .from('data_generus')
+            .select('id_generus, kelompok, nama_lengkap')
+            .ilike('nama_lengkap', `%${namaInput}%`)
+            .limit(1)
+            .maybeSingle();
+
+        if (data) {
+            document.getElementById('view-id').innerText = data.id_generus;
+            document.getElementById('view-kelompok').innerText = data.kelompok;
+            document.getElementById('target_id_terpilih').value = data.id_generus; // Simpan ID untuk eksekusi update nanti
+            previewBox.style.display = "block";
+        } else {
+            previewBox.style.display = "none";
+            document.getElementById('target_id_terpilih').value = "";
+        }
+    }
+
+    // Eksekusi Update Status ke Kolom Supabase
     async function eksekusiUpdateStatus() {
-        let idTarget = document.getElementById('update_id_generus').value.trim();
-        let statusBaru = document.getElementById('update_status_pernikahan').value;
+        let idTarget = document.getElementById('target_id_terpilih').value;
+        let namaInput = document.getElementById('update_nama_generus').value.trim();
+        let opsiPilihan = document.getElementById('update_status_opsi').value;
         let btnUpdate = document.getElementById('btn-update-status');
 
-        if (!idTarget) return alert("Harap masukkan ID Anggota yang ingin diupdate!");
+        if (!namaInput || !idTarget) {
+            return tampilkanNotif("Data Anggota tidak ditemukan! Masukkan nama dengan benar.", "error");
+        }
 
         btnUpdate.innerText = "Memproses...";
         btnUpdate.disabled = true;
 
-        // Menentukan kolom target update di tabel data_generus Supabase Anda
-        // Di sini saya asumsikan kolom status pernikahan menggunakan nama "status_pernikahan" atau sejenisnya.
-        // Jika kolomnya bernama lain, silakan sesuaikan key objek di bawah ini.
         let dataUpdate = {};
-        if (statusBaru === "Menikah") {
+        if (opsiPilihan === "Menikah") {
             dataUpdate = { status_pernikahan: "Menikah" }; 
-        } else if (statusBaru === "Non Aktif") {
-            dataUpdate = { status_aktif: "Non Aktif" }; // Menandakan sudah meninggal dunia
+        } else if (opsiPilihan === "Non Aktif") {
+            dataUpdate = { status_aktif: "Non Aktif" }; 
         }
 
         let { data, error } = await _supabase
@@ -298,19 +355,17 @@
             .select();
 
         if (error) {
-            alert("Gagal memperbarui data: " + error.message);
-        } else if (data && data.length === 0) {
-            alert("Data tidak ditemukan! Periksa kembali ID Anggota.");
+            tampilkanNotif("Gagal memperbarui data: " + error.message, "error");
         } else {
-            alert(`Berhasil memperbarui ID ${idTarget} menjadi "${statusBaru}".`);
+            tampilkanNotif(`Data Anggota berhasil diubah ke "${opsiPilihan}".`);
             tutupModal();
         }
 
-        btnUpdate.innerText = "Update Data";
+        btnUpdate.innerText = "Update Status";
         btnUpdate.disabled = false;
     }
-    // --- AKHIR FITUR OPERATOR ---
 
+    // --- REGISTRASI PENDAFTARAN MANDIRI ---
     async function prosesPendaftaranMandiri() {
         let idGenerus = document.getElementById('id_generus').value.trim();
         let nama = document.getElementById('nama').value.trim();
@@ -319,12 +374,12 @@
         let desa = document.getElementById('desa').value.trim();
         let btn = document.getElementById('btn-daftar');
 
-        if(!nama || !kelompok || !desa) return alert("Harap lengkapi semua data!");
+        if(!nama || !kelompok || !desa) return tampilkanNotif("Harap lengkapi semua data!", "error");
 
         let nilaiTambahan = (status === "Generus") ? document.getElementById('usia').value : 
                             (status === "Pengurus") ? document.getElementById('input_dapukan').value.trim() : "-";
         
-        if (status === "Pengurus" && !nilaiTambahan) return alert("Harap masukkan Dapukan!");
+        if (status === "Pengurus" && !nilaiTambahan) return tampilkanNotif("Harap masukkan Dapukan!", "error");
 
         btn.innerText = "Menyimpan..."; btn.disabled = true;
 
@@ -334,9 +389,10 @@
         }]);
 
         if (error) {
-            alert("Gagal mendaftar: " + error.message);
+            tampilkanNotif("Gagal mendaftar: " + error.message, "error");
             btn.innerText = "Kirim & Buat QR Code"; btn.disabled = false;
         } else {
+            tampilkanNotif("Pendaftaran berhasil disimpan!");
             tampilkanQRCode(idGenerus, nama);
         }
     }
