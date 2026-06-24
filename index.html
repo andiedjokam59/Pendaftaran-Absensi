@@ -17,6 +17,8 @@
             --text-dark: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
         }
 
         body {
@@ -35,6 +37,21 @@
             padding: 28px 24px; border-radius: 20px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
             box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Icon Gear Style */
+        .gear-icon {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.2s, transform 0.3s;
+        }
+        .gear-icon:hover {
+            color: var(--primary);
+            transform: rotate(45deg);
         }
 
         h2 { text-align: center; margin: 0 0 6px 0; color: var(--primary); font-size: 22px; font-weight: 700; }
@@ -76,6 +93,23 @@
         .preview-holder { margin-top: 16px; display: none; animation: fadeIn 0.3s ease-out; }
         .preview-holder img { width: 100%; max-width: 280px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border: 2px solid var(--border-color); }
 
+        /* Modal / Pop-up Style */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000; display: none; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-box {
+            width: 90%; max-width: 380px; background: white;
+            padding: 24px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            position: relative; animation: slideUp 0.3s ease-out;
+        }
+        .modal-close {
+            position: absolute; top: 16px; right: 16px; cursor: pointer;
+            font-size: 20px; color: var(--text-muted); font-weight: bold;
+        }
+
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -83,6 +117,11 @@
 <body>
 
 <div class="container">
+    <!-- Icon Gear Pengaturan -->
+    <div class="gear-icon" onclick="bukaAksesOperator()" title="Menu Operator Kelompok">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    </div>
+
     <h2>Pendaftaran Mandiri</h2>
     <p class="subtitle">Insan Qur'any Tawangmangu</p>
     
@@ -109,8 +148,7 @@
         <select id="status" onchange="handleStatusChange()">
             <option value="Generus">Generus</option>
             <option value="Pengurus">Pengurus</option>
-            <option value="MT/MS">MT/MS</option>
-            <option value="Jama'ah Umum">Jama'ah Umum</option>
+            <option value="MT">MT</option>
         </select>
     </div>
 
@@ -158,8 +196,34 @@
     </div>
 </div>
 
+<!-- MODAL UPDATE DATA OPERATOR -->
+<div id="operator-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-close" onclick="tutupModal()">&times;</div>
+        <h3 style="margin: 0 0 4px 0; color: var(--primary); font-size: 18px; text-align: center;">Update Status Anggota</h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 20px 0; text-align: center;">Khusus Operator Kelompok</p>
+        
+        <div class="form-group">
+            <label for="update_id_generus">ID Anggota (Contoh: IQ12345)</label>
+            <input type="text" id="update_id_generus" placeholder="Masukkan ID Anggota...">
+        </div>
+
+        <div class="form-group">
+            <label for="update_status_pernikahan">Update Status</label>
+            <select id="update_status_pernikahan">
+                <option value="Menikah">Menikah</option>
+                <option value="Non Aktif">Non Aktif (Meninggal Dunia)</option>
+            </select>
+        </div>
+
+        <button class="btn" id="btn-update-status" onclick="eksekusiUpdateStatus()">Update Data</button>
+    </div>
+</div>
+
 <script>
-    // Fungsi untuk membuat huruf pertama setiap kata menjadi kapital
+    // Konfigurasi sandi masuk operator
+    const SANDI_OPERATOR = "operatorIQ"; // Silakan ubah kata sandi ini sesuai kebutuhan
+
     function formatKapital(el) {
         if (!el.value) return;
         el.value = el.value.split(' ').map(kata => {
@@ -185,6 +249,67 @@
     }
 
     window.onload = function() { buatIdOtomatis(); handleStatusChange(); };
+
+    // --- FITUR UPDATE DATA OPERATOR ---
+    function bukaAksesOperator() {
+        let inputSandi = prompt("Masukkan Sandi Akses Operator:");
+        if (inputSandi === null) return; // Jika batal
+        
+        if (inputSandi === SANDI_OPERATOR) {
+            let modal = document.getElementById('operator-modal');
+            modal.style.display = "flex";
+            setTimeout(() => { modal.style.opacity = "1"; }, 10);
+        } else {
+            alert("Sandi salah! Akses ditolak.");
+        }
+    }
+
+    function tutupModal() {
+        let modal = document.getElementById('operator-modal');
+        modal.style.opacity = "0";
+        setTimeout(() => { modal.style.display = "none"; }, 300);
+        document.getElementById('update_id_generus').value = "";
+    }
+
+    async function eksekusiUpdateStatus() {
+        let idTarget = document.getElementById('update_id_generus').value.trim();
+        let statusBaru = document.getElementById('update_status_pernikahan').value;
+        let btnUpdate = document.getElementById('btn-update-status');
+
+        if (!idTarget) return alert("Harap masukkan ID Anggota yang ingin diupdate!");
+
+        btnUpdate.innerText = "Memproses...";
+        btnUpdate.disabled = true;
+
+        // Menentukan kolom target update di tabel data_generus Supabase Anda
+        // Di sini saya asumsikan kolom status pernikahan menggunakan nama "status_pernikahan" atau sejenisnya.
+        // Jika kolomnya bernama lain, silakan sesuaikan key objek di bawah ini.
+        let dataUpdate = {};
+        if (statusBaru === "Menikah") {
+            dataUpdate = { status_pernikahan: "Menikah" }; 
+        } else if (statusBaru === "Non Aktif") {
+            dataUpdate = { status_aktif: "Non Aktif" }; // Menandakan sudah meninggal dunia
+        }
+
+        let { data, error } = await _supabase
+            .from('data_generus')
+            .update(dataUpdate)
+            .eq('id_generus', idTarget)
+            .select();
+
+        if (error) {
+            alert("Gagal memperbarui data: " + error.message);
+        } else if (data && data.length === 0) {
+            alert("Data tidak ditemukan! Periksa kembali ID Anggota.");
+        } else {
+            alert(`Berhasil memperbarui ID ${idTarget} menjadi "${statusBaru}".`);
+            tutupModal();
+        }
+
+        btnUpdate.innerText = "Update Data";
+        btnUpdate.disabled = false;
+    }
+    // --- AKHIR FITUR OPERATOR ---
 
     async function prosesPendaftaranMandiri() {
         let idGenerus = document.getElementById('id_generus').value.trim();
@@ -245,7 +370,7 @@
         imgBg.onload = function() {
             c.width = imgBg.width; c.height = imgBg.height;
             ctx.drawImage(imgBg, 0, 0);
-            ctx.font = `bold ${Math.round(c.width * 0.070)}px bookman old style`;
+            ctx.font = `bold ${Math.round(c.width * 0.075)}px bookman old style`;
             ctx.fillStyle = "#024731"; ctx.textAlign = "center";
             ctx.fillText(`ID ${statusUser}`, c.width / 2, c.height * 0.455);
             ctx.drawImage(qrImgElement, (c.width - (c.width * 0.453)) / 2, c.height * 0.52, c.width * 0.447, c.width * 0.415);
